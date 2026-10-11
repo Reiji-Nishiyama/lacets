@@ -7,15 +7,180 @@
     'Hiragino Sans',
     'Noto Sans JP',
     sans-serif;
-  background: #1f2933;
-  color: #f5f7fa;
+  --bg: #1f2933;
+  --panel: #2b3742;
+  --border: #3e4c59;
+  --text: #f5f7fa;
+  --muted: #9aa5b1;
+  --accent: #f5b041;
+  --ok: #3ebd93;
+  --warn: #f0b429;
+  --error: #ef4e4e;
+  background: var(--bg);
+  color: var(--text);
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
+  background: var(--bg);
 }
 
-.app {
-  padding: 2rem;
+a {
+  color: var(--accent);
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+.page-header h1 {
+  margin: 0;
+}
+
+.subtitle {
+  margin: 0.25rem 0 1rem;
+  color: var(--muted);
+}
+
+.notice {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: var(--panel);
+  border-left: 4px solid var(--accent);
+}
+
+.notice-warn {
+  border-left-color: var(--warn);
+}
+
+.notice-error {
+  border-left-color: var(--error);
+}
+
+.panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+  gap: 1rem;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.device-name {
+  color: var(--muted);
+  margin: 0.25rem 0 0;
+}
+
+.badge {
+  font-size: 0.85rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.badge-connected {
+  color: var(--ok);
+  border-color: var(--ok);
+}
+
+.badge-connecting,
+.badge-reconnecting {
+  color: var(--warn);
+  border-color: var(--warn);
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.metric-label {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.metric-value {
+  font-size: 2rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-unit {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-left: 0.25rem;
+}
+
+.grade-value {
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+input[type='range'] {
+  width: 100%;
+  margin: 1rem 0 0.25rem;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.field {
+  display: block;
+  margin-top: 0.75rem;
+}
+
+.field select {
+  margin-left: 0.5rem;
+}
+
+.actions {
+  margin-top: 1rem;
+}
+
+button {
+  font: inherit;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: default;
 }

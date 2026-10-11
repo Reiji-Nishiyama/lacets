@@ -14,15 +14,15 @@
 - **DoD**: `npm run dev` で空の画面が開き、CI が通る
 
 ## M1. トレーナー接続
-- [ ] `BleTransport` インターフェースと `WebBluetoothTransport` 実装
-- [ ] `TrainerDevice` インターフェース定義（connect / disconnect / setSimulation / onData）
-- [ ] FTMS のバイト列エンコード/デコード（`05-ble-ftms.md`）とユニットテスト
-- [ ] `FtmsTrainer`（Web Bluetooth）実装、Request Control → Start
-- [ ] `SimulatedTrainer`（設定したパワー・ケイデンスを擬似生成、勾配に応じてパワーが変わるモード付き）
-- [ ] 心拍計（Heart Rate Service）接続
-- [ ] 切断検知と自動再接続
-- [ ] 接続テスト画面（パワー・ケイデンス表示、勾配を手動スライダーで送信）
-- [ ] `src/platform/` の雛形（機能検出）
+- [x] `BleTransport` インターフェースと `WebBluetoothTransport` 実装
+- [x] `TrainerDevice` インターフェース定義（connect / disconnect / setSimulation / onData）
+- [x] FTMS のバイト列エンコード/デコード（`05-ble-ftms.md`）とユニットテスト
+- [x] `FtmsTrainer`（Web Bluetooth）実装、Request Control → Start
+- [x] `SimulatedTrainer`（設定したパワー・ケイデンスを擬似生成、勾配に応じてパワーが変わるモード付き）
+- [x] 心拍計（Heart Rate Service）接続
+- [x] 切断検知と自動再接続
+- [x] 接続テスト画面（パワー・ケイデンス表示、勾配を手動スライダーで送信）
+- [x] `src/platform/` の雛形（機能検出）
 - **DoD**: 【実機】スライダーで勾配を 0→10% に変えると負荷が上がり、実変速で軽くできる。**Windows（Chrome）・macOS（Chrome）・iPad（Bluefy）の3環境で確認**する（iPad で動かない場合は原因を記録し、M8 の前倒しを判断）
 
 ## M2. ルート取り込みと走行（MVP）
