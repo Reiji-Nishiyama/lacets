@@ -1,10 +1,14 @@
-import { t } from './i18n/index.ts'
+import { useEffect, useState } from 'react'
+import { createDevices } from '../devices/createDevices.ts'
+import { currentLaunchOptions } from '../platform/launchOptions.ts'
+import { bindDevices } from '../store/deviceStore.ts'
+import { ConnectionTestPage } from './connection/ConnectionTestPage.tsx'
 
 export function App() {
-  return (
-    <main className="app">
-      <h1>{t('app.name')}</h1>
-      <p>{t('app.tagline')}</p>
-    </main>
-  )
+  const [launch] = useState(currentLaunchOptions)
+  const [devices] = useState(() => createDevices(launch))
+
+  useEffect(() => bindDevices(devices), [devices])
+
+  return <ConnectionTestPage simulator={launch.simulator} />
 }

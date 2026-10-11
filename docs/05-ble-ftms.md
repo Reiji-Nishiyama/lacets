@@ -58,5 +58,6 @@ Web Bluetooth の `requestDevice` では `filters: [{ services: [0x1826] }]` を
 ## 運用上の注意
 - 勾配の送信は 1 秒に 1〜4 回程度に抑える（過剰な書き込みはトレーナー側で無視・遅延の原因）
 - Control Point の書き込みは直列化する（前の応答を待ってから次を送る。キューを実装）
-- 接続直後は Supported Inclination Range を読み、送信値をクランプする
+- 接続直後は Supported Inclination Range を読み、送信値をクランプする（キャラクタリスティックがない場合は ±25% でクランプ。実装: `src/devices/ftms/FtmsTrainer.ts`）
+- 予期しない切断時は同じデバイスに自動再接続し（1→2→4→8→15 秒間隔、最大 20 回）、Request Control → Start → 直前の勾配を送り直す。Fitness Machine Status で Control Permission Lost（0xFF）を受けた場合も制御権を取り直す
 - KICKR のファームウェアは Wahoo アプリで最新にしておく（セットアップガイドに記載）
