@@ -6,11 +6,11 @@
 実機（KICKR）が必要な確認は【実機】と表記。それ以外はシミュレータで確認できること。
 
 ## M0. 開発基盤
-- [ ] Vite + React + TypeScript（strict）でプロジェクト作成
-- [ ] ESLint / Prettier / Vitest / Playwright 導入
-- [ ] GitHub Actions で lint・typecheck・test
-- [ ] PWA 設定（manifest, service worker）
-- [ ] ディレクトリ構成を CLAUDE.md の通りに作成
+- [x] Vite + React + TypeScript（strict）でプロジェクト作成
+- [x] ESLint / Prettier / Vitest / Playwright 導入
+- [x] GitHub Actions で lint・typecheck・test
+- [x] PWA 設定（manifest, service worker）
+- [x] ディレクトリ構成を CLAUDE.md の通りに作成
 - **DoD**: `npm run dev` で空の画面が開き、CI が通る
 
 ## M1. トレーナー接続

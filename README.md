@@ -1,1 +1,22 @@
-# lacets
+# Lacets
+
+実在のルートを、スマートトレーナー上で「実際に走っているかのように」再現するインドアサイクリング Web アプリ。
+設計・計画は [`CLAUDE.md`](CLAUDE.md) と [`docs/`](docs/) を参照。
+
+## 開発環境
+
+- Node.js 24（`.nvmrc`。Vite 8 は Node 20.19+ / 22.12+ が必要）
+
+```sh
+nvm use
+npm ci
+npm run dev          # 開発サーバー（?sim=1 でシミュレータトレーナー ※M1 で実装）
+npm test             # ユニットテスト（Vitest）
+npm run e2e          # E2E テスト（Playwright）
+npm run lint         # ESLint + Prettier チェック
+npm run typecheck
+npm run format       # Prettier で整形
+```
+
+E2E の初回は `npx playwright install chromium` でブラウザを入れる。
+Linux / WSL で共有ライブラリ不足（`libgbm.so.1` 等）のエラーが出る場合は `sudo npx playwright install-deps chromium` を実行する。
