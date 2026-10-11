@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 自作フィクスチャ: TCX 実走（2 ラップ） -->
+<TrainingCenterDatabase xmlns="http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2">
+  <Activities>
+    <Activity Sport="Biking">
+      <Lap StartTime="2026-06-07T06:30:00Z">
+        <Track>
+          <Trackpoint>
+            <Time>2026-06-07T06:30:00Z</Time>
+            <Position><LatitudeDegrees>35.36</LatitudeDegrees><LongitudeDegrees>138.73</LongitudeDegrees></Position>
+            <AltitudeMeters>1100</AltitudeMeters>
+          </Trackpoint>
+        </Track>
+      </Lap>
+      <Lap StartTime="2026-06-07T06:31:00Z">
+        <Track>
+          <Trackpoint>
+            <Time>2026-06-07T06:31:00Z</Time>
+            <Position><LatitudeDegrees>35.361</LatitudeDegrees><LongitudeDegrees>138.73</LongitudeDegrees></Position>
+            <AltitudeMeters>1108</AltitudeMeters>
+          </Trackpoint>
+        </Track>
+      </Lap>
+    </Activity>
+  </Activities>
+</TrainingCenterDatabase>
