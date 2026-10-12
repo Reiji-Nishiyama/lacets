@@ -121,6 +121,41 @@ export const ja = {
   'settings.difficultyHint':
     'トレーナーに送る勾配に掛ける割合です。100% で実際の勾配を再現します。速度の計算には影響しません。',
 
+  'nav.history': '履歴',
+
+  'ghost.heading': 'ゴースト',
+  'ghost.none': 'なし',
+  'ghost.optionReference': '実走: {name}（{date}・ルートの {coverage}%）',
+  'ghost.optionRide': '過去の走行: {date}',
+  'ghost.add': '実走データ（FIT / GPX / TCX）を追加',
+  'ghost.added': '{name} を追加しました',
+  'ghost.lowCoverage':
+    'このゴーストはルートの {coverage}% しか走っていません。走っていない区間では差を表示しません。',
+  'ghost.hint':
+    '前年の実走（Wahoo / Garmin の FIT など）や、このルートの過去の走行と同じ距離地点での時間差を表示します。',
+  'metric.ghostDelta': 'ゴースト差',
+  'ghost.ahead': 'ゴーストより速い',
+  'ghost.behind': 'ゴーストより遅い',
+
+  'report.title': '区間比較',
+  'report.withGhost': 'ゴースト: {name}',
+  'report.tab.km': '1 km ごと',
+  'report.tab.climb': '登り',
+  'report.noClimbs': '登り区間はありません',
+  'report.segment': '区間',
+  'report.time': 'タイム',
+  'report.delta': '差',
+  'report.power': 'パワー',
+  'report.wkg': 'W/kg',
+  'report.you': '自分',
+  'report.ghost': 'ゴースト',
+  'report.climbLabel': '{from}–{to} km（{grade}%）',
+  'report.kmLabel': '{from}–{to} km',
+
+  'history.title': '走行履歴',
+  'history.empty': 'まだ走行記録がありません',
+  'history.notFound': '走行記録が見つかりません',
+
   'error.connectFailed': '接続できませんでした: {detail}',
   'error.commandFailed': 'トレーナーへの送信に失敗しました: {detail}',
 } as const

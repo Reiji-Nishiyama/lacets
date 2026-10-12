@@ -1,15 +1,12 @@
-import type { RiderSettings } from '../domain/rider.ts'
 import type { Unsubscribe } from '../devices/emitter.ts'
 import type { RideEngine, RideSnapshot, RideStatus } from '../ride/RideEngine.ts'
 import { computeRideStats } from './rideStats.ts'
 import type { RecordedRide, RideEvent, RideSample } from './types.ts'
 
-export interface RideRecorderMeta {
-  id: string
-  routeId: string
-  routeName: string
-  settings: RiderSettings
-}
+export type RideRecorderMeta = Pick<
+  RecordedRide,
+  'id' | 'routeId' | 'routeName' | 'settings' | 'ghost'
+>
 
 /**
  * RideEngine の記録ティック（約 1 秒ごと）からサンプルを集め、一時停止・再開をイベントとして残す。

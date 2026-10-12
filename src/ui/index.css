@@ -463,3 +463,70 @@ button:disabled {
 .field-unit {
   color: var(--muted);
 }
+
+/* ゴースト */
+.profile-ghost-marker {
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-dasharray: 6 4;
+}
+
+.delta-ahead {
+  color: var(--ok);
+}
+
+.delta-behind {
+  color: var(--error);
+}
+
+.ghost-picker h3,
+.report h3 {
+  margin: 0 0 0.5rem;
+}
+
+.ghost-picker select {
+  font: inherit;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  max-width: 100%;
+}
+
+/* レポート */
+.report {
+  margin-top: 1.5rem;
+}
+
+.report-tabs {
+  margin-bottom: 0.5rem;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.report-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.report-table th,
+.report-table td {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+  text-align: right;
+}
+
+.report-table th {
+  color: var(--muted);
+  font-weight: normal;
+  text-align: center;
+}
+
+.report-table td:first-child {
+  text-align: left;
+}

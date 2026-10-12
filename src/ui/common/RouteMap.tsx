@@ -22,15 +22,19 @@ export interface MapPosition {
 export function RouteMap({
   profile,
   position,
+  ghostPosition,
   follow = false,
 }: {
   profile: readonly ProfilePoint[]
   position?: MapPosition
+  /** ゴーストの位置（あれば灰色のマーカーで表示） */
+  ghostPosition?: MapPosition
   follow?: boolean
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
   const markerRef = useRef<Marker | null>(null)
+  const ghostMarkerRef = useRef<Marker | null>(null)
   const followStartedRef = useRef(false)
   const [unavailable, setUnavailable] = useState(false)
 
@@ -77,6 +81,7 @@ export function RouteMap({
         })
         m.on('error', (e) => console.warn('地図のエラー', e.error))
         markerRef.current = new maplibregl.Marker({ color: '#1c7ed6' })
+        ghostMarkerRef.current = new maplibregl.Marker({ color: '#868e96', scale: 0.8 })
         mapRef.current = m
       } catch (e) {
         console.warn('地図を初期化できませんでした', e)
@@ -87,6 +92,8 @@ export function RouteMap({
       cancelled = true
       markerRef.current?.remove()
       markerRef.current = null
+      ghostMarkerRef.current?.remove()
+      ghostMarkerRef.current = null
       map?.remove()
       mapRef.current = null
       followStartedRef.current = false
@@ -109,6 +116,18 @@ export function RouteMap({
       map.easeTo({ center, duration: 250, easing: (x) => x })
     }
   }, [position, follow])
+
+  useEffect(() => {
+    const map = mapRef.current
+    const marker = ghostMarkerRef.current
+    if (!map || !marker) return
+    if (!ghostPosition) {
+      marker.remove()
+      return
+    }
+    marker.setLngLat([ghostPosition.lon, ghostPosition.lat])
+    if (!marker.getElement().isConnected) marker.addTo(map)
+  }, [ghostPosition])
 
   if (unavailable) return <div className="map map-unavailable">{t('map.unavailable')}</div>
   return <div className="map" ref={containerRef} />

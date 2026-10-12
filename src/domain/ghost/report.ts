@@ -41,13 +41,36 @@ export function climbSegments(climbs: readonly Climb[]): ReportSegment[] {
   }))
 }
 
+/**
+ * ゴーストの範囲の端がこの距離以内なら、区間をゴーストの範囲に縮めて比べる [m]。
+ * 実走ゴーストはスタート地点の待機を除くため、ルートの 0 m より少し先から始まる
+ */
+const EDGE_TOLERANCE_M = 100
+
+/** 自分とゴーストを比べる距離の範囲。ゴーストが区間を覆っていなければ null */
+function comparableRange(
+  segment: ReportSegment,
+  ghost: TimedTrack | null,
+): { startM: number; endM: number } | null {
+  if (!ghost) return { startM: segment.startM, endM: segment.endM }
+  const startM =
+    ghost.coveredFromM > segment.startM && ghost.coveredFromM - segment.startM <= EDGE_TOLERANCE_M
+      ? ghost.coveredFromM
+      : segment.startM
+  const endM =
+    ghost.coveredToM < segment.endM && segment.endM - ghost.coveredToM <= EDGE_TOLERANCE_M
+      ? ghost.coveredToM
+      : segment.endM
+  return endM > startM ? { startM, endM } : null
+}
+
 function segmentResult(
   track: TimedTrack,
-  segment: ReportSegment,
+  range: { startM: number; endM: number },
   massKg: number,
 ): SegmentResult | null {
-  const t0 = track.timeAt(segment.startM)
-  const t1 = track.timeAt(segment.endM)
+  const t0 = track.timeAt(range.startM)
+  const t1 = track.timeAt(range.endM)
   if (t0 === null || t1 === null) return null
   const averagePowerW = track.averagePowerBetween(t0, t1)
   return {
@@ -69,8 +92,10 @@ export function compareSegments(
   ghostMassKg = userMassKg,
 ): SegmentComparison[] {
   return segments.map((segment) => {
-    const u = segmentResult(user, segment, userMassKg)
-    const g = ghost ? segmentResult(ghost, segment, ghostMassKg) : null
+    const range = comparableRange(segment, ghost)
+    const g = ghost && range ? segmentResult(ghost, range, ghostMassKg) : null
+    // ゴーストと比べられる区間は同じ範囲で、比べられなければ区間全体で自分の値を出す
+    const u = segmentResult(user, g && range ? range : segment, userMassKg)
     return { segment, user: u, ghost: g, deltaS: u && g ? u.timeS - g.timeS : null }
   })
 }

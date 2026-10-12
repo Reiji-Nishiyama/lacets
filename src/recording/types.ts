@@ -40,6 +40,12 @@ export interface RideStats {
   maxHeartRateBpm: number | null
 }
 
+/** ゴーストの参照先: 実走データ（ReferenceRide）か、Lacets の過去の走行 */
+export interface GhostRef {
+  kind: 'reference' | 'ride'
+  id: string
+}
+
 /** 端末内に保存する走行記録（docs/02-architecture.md §3 の Ride） */
 export interface RecordedRide {
   id: string
@@ -52,4 +58,6 @@ export interface RecordedRide {
   stats: RideStats
   /** 走行時点の設定のスナップショット */
   settings: RiderSettings
+  /** 走行中に比べたゴースト */
+  ghost?: GhostRef & { name: string }
 }

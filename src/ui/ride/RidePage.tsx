@@ -3,7 +3,7 @@ import { rideActions, useRideStore } from '../../store/rideStore.ts'
 import { ElevationProfile } from '../common/ElevationProfile.tsx'
 import { RouteMap } from '../common/RouteMap.tsx'
 import { Stat } from '../common/Stat.tsx'
-import { formatGradePct, formatInt, formatKm, formatKmh } from '../format.ts'
+import { formatDelta, formatGradePct, formatInt, formatKm, formatKmh } from '../format.ts'
 import { t } from '../i18n/index.ts'
 import { useNavigation } from '../navigation.ts'
 import { RideSummaryPanel } from './RideSummaryPanel.tsx'
@@ -11,10 +11,16 @@ import { RideSummaryPanel } from './RideSummaryPanel.tsx'
 export function RidePage() {
   const route = useRideStore((s) => s.route)
   const snapshot = useRideStore((s) => s.snapshot)
+  const ghost = useRideStore((s) => s.ghost)
+  const ghostState = useRideStore((s) => s.ghostState)
+  const course = useRideStore((s) => s.course)
   const navigate = useNavigation((s) => s.navigate)
 
   if (!route || !snapshot) return null
   const { status, position } = snapshot
+  const ghostPosition =
+    ghost && ghostState && course ? course.positionAt(ghostState.ghostDistanceM) : undefined
+  const delta = ghostState?.deltaS ?? null
 
   const exit = () => {
     rideActions.exit()
@@ -31,6 +37,17 @@ export function RidePage() {
       </div>
 
       <div className="ride-metrics">
+        {ghost && (
+          <div
+            className={`stat ghost-delta ${delta === null ? '' : delta < 0 ? 'delta-ahead' : 'delta-behind'}`}
+            title={delta === null ? undefined : t(delta < 0 ? 'ghost.ahead' : 'ghost.behind')}
+          >
+            <div className="stat-label">{t('metric.ghostDelta')}</div>
+            <div className="stat-value" data-testid="ride-ghost-delta">
+              {formatDelta(delta)}
+            </div>
+          </div>
+        )}
         <Stat
           label={t('metric.power')}
           value={formatInt(snapshot.powerW)}
@@ -105,8 +122,12 @@ export function RidePage() {
         )}
       </div>
 
-      <ElevationProfile profile={route.profile} markerDistanceM={snapshot.distanceM} />
-      <RouteMap profile={route.profile} position={position} follow />
+      <ElevationProfile
+        profile={route.profile}
+        markerDistanceM={snapshot.distanceM}
+        ghostDistanceM={ghostState?.ghostDistanceM}
+      />
+      <RouteMap profile={route.profile} position={position} ghostPosition={ghostPosition} follow />
     </section>
   )
 }

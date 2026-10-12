@@ -6,6 +6,8 @@ import { loadSettings } from '../store/settingsStore.ts'
 import { ConnectionBadge } from './connection/ConnectionBadge.tsx'
 import { DevicesPage } from './connection/DevicesPage.tsx'
 import { DeviceErrorBanner } from './DeviceErrorBanner.tsx'
+import { HistoryPage } from './history/HistoryPage.tsx'
+import { RideDetailPage } from './history/RideDetailPage.tsx'
 import { t } from './i18n/index.ts'
 import { useNavigation, type Screen } from './navigation.ts'
 import { RidePage } from './ride/RidePage.tsx'
@@ -15,6 +17,7 @@ import { SettingsPage } from './settings/SettingsPage.tsx'
 
 const TABS = [
   { name: 'routes', label: 'nav.routes' },
+  { name: 'history', label: 'nav.history' },
   { name: 'devices', label: 'nav.devices' },
   { name: 'settings', label: 'nav.settings' },
 ] as const
@@ -32,7 +35,8 @@ export function App() {
   }, [])
 
   const riding = screen.name === 'ride'
-  const activeTab = screen.name === 'preview' ? 'routes' : screen.name
+  const activeTab =
+    screen.name === 'preview' ? 'routes' : screen.name === 'rideDetail' ? 'history' : screen.name
 
   return (
     <div className="page">
@@ -72,6 +76,10 @@ function ScreenView({ screen }: { screen: Screen }) {
       return <RoutePreviewPage routeId={screen.routeId} />
     case 'ride':
       return <RidePage />
+    case 'history':
+      return <HistoryPage />
+    case 'rideDetail':
+      return <RideDetailPage rideId={screen.rideId} />
     case 'devices':
       return <DevicesPage />
     case 'settings':

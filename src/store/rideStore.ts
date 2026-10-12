@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { Course } from '../domain/course/Course.ts'
+import { GhostComparator, type GhostState } from '../domain/ghost/GhostComparator.ts'
 import type { RiderSettings } from '../domain/rider.ts'
 import type { Devices } from '../devices/createDevices.ts'
 import { saveFile, type SaveResult } from '../platform/fileSave.ts'
@@ -8,6 +9,7 @@ import { RideRecorder } from '../recording/RideRecorder.ts'
 import type { RecordedRide } from '../recording/types.ts'
 import { RideEngine, type RideSnapshot } from '../ride/RideEngine.ts'
 import type { StoredRoute } from './db.ts'
+import type { LoadedGhost } from './ghosts.ts'
 import { saveRide } from './rideRepository.ts'
 
 /** 走行記録の端末内保存の状態 */
@@ -17,6 +19,9 @@ interface RideState {
   route: StoredRoute | null
   course: Course | null
   snapshot: RideSnapshot | null
+  /** 走行中に比べているゴースト */
+  ghost: LoadedGhost | null
+  ghostState: GhostState | null
   /** 終了後の走行記録。一度も走らずに終えた場合は null のまま */
   recordedRide: RecordedRide | null
   saveState: RideSaveState
@@ -26,6 +31,8 @@ const initialState: RideState = {
   route: null,
   course: null,
   snapshot: null,
+  ghost: null,
+  ghostState: null,
   recordedRide: null,
   saveState: 'idle',
 }
@@ -57,7 +64,12 @@ async function persist(ride: RecordedRide) {
 }
 
 export const rideActions = {
-  start(route: StoredRoute, devices: Devices, settings: RiderSettings) {
+  start(
+    route: StoredRoute,
+    devices: Devices,
+    settings: RiderSettings,
+    ghost: LoadedGhost | null = null,
+  ) {
     cleanup()
     if (!devices.trainer) throw new Error('トレーナーがありません')
     const course = new Course(route.profile)
@@ -74,10 +86,13 @@ export const rideActions = {
       routeId: route.id,
       routeName: route.name,
       settings,
+      ...(ghost ? { ghost: { ...ghost.ref, name: ghost.name } } : {}),
     })
+    const comparator = ghost ? new GhostComparator(ghost.track) : null
     unsubs.push(
       e.onSnapshot((snapshot) => {
-        useRideStore.setState({ snapshot })
+        const ghostState = comparator?.update(snapshot.distanceM, snapshot.elapsedS) ?? null
+        useRideStore.setState({ snapshot, ghostState })
         if (snapshot.status !== 'finished') return
         wakeLock?.release()
         wakeLock = null
@@ -85,7 +100,7 @@ export const rideActions = {
         if (ride) void persist(ride)
       }),
     )
-    useRideStore.setState({ ...initialState, route, course, snapshot: e.snapshot })
+    useRideStore.setState({ ...initialState, route, course, ghost, snapshot: e.snapshot })
     wakeLock = keepScreenOn()
     e.start()
   },
@@ -96,13 +111,12 @@ export const rideActions = {
     cleanup()
     useRideStore.setState(initialState)
   },
-  /** 走行記録を FIT ファイルとして書き出す（F4-2） */
-  async exportFit(): Promise<SaveResult | null> {
-    const ride = useRideStore.getState().recordedRide
-    if (!ride) return null
-    // FIT SDK は大きいので書き出すときだけ読み込む
-    const { encodeRideFit, rideFitFileName } = await import('../recording/fitExport.ts')
-    const bytes = encodeRideFit(ride, -new Date(ride.startedAtMs).getTimezoneOffset())
-    return saveFile(rideFitFileName(ride), bytes, 'application/vnd.ant.fit', 'FIT')
-  },
+}
+
+/** 走行記録を FIT ファイルとして書き出す（F4-2） */
+export async function exportRideFit(ride: RecordedRide): Promise<SaveResult> {
+  // FIT SDK は大きいので書き出すときだけ読み込む
+  const { encodeRideFit, rideFitFileName } = await import('../recording/fitExport.ts')
+  const bytes = encodeRideFit(ride, -new Date(ride.startedAtMs).getTimezoneOffset())
+  return saveFile(rideFitFileName(ride), bytes, 'application/vnd.ant.fit', 'FIT')
 }

@@ -1,33 +1,13 @@
-import { useState } from 'react'
-import { formatDuration } from '../../domain/units.ts'
-import { rideActions, useRideStore } from '../../store/rideStore.ts'
-import { Stat } from '../common/Stat.tsx'
-import { formatInt, formatKm, formatMeters } from '../format.ts'
+import { useRideStore } from '../../store/rideStore.ts'
+import { FitExportButton } from '../common/FitExportButton.tsx'
 import { t } from '../i18n/index.ts'
+import { RideReportView } from '../report/RideReportView.tsx'
+import { RideStatsView } from '../report/RideStatsView.tsx'
 
-type ExportMessage = { kind: 'ok' | 'error'; text: string } | null
-
-/** 走行後の結果と FIT の書き出し */
+/** 走行後の結果・保存状態・区間比較・FIT の書き出し */
 export function RideSummaryPanel() {
   const ride = useRideStore((s) => s.recordedRide)
   const saveState = useRideStore((s) => s.saveState)
-  const [message, setMessage] = useState<ExportMessage>(null)
-  const [exporting, setExporting] = useState(false)
-
-  const exportFit = async () => {
-    setExporting(true)
-    setMessage(null)
-    try {
-      const result = await rideActions.exportFit()
-      if (result === 'saved') setMessage({ kind: 'ok', text: t('summary.exported') })
-    } catch (e) {
-      console.error(e)
-      const detail = e instanceof Error ? e.message : String(e)
-      setMessage({ kind: 'error', text: t('summary.exportFailed', { detail }) })
-    } finally {
-      setExporting(false)
-    }
-  }
 
   if (!ride) {
     return (
@@ -37,25 +17,10 @@ export function RideSummaryPanel() {
       </div>
     )
   }
-  const { stats } = ride
   return (
     <div className="panel summary" data-testid="ride-summary">
       <h3>{t('summary.title')}</h3>
-      <div className="stats">
-        <Stat
-          label={t('metric.distance')}
-          value={formatKm(stats.distanceM, 2)}
-          unit={t('unit.km')}
-          testId="summary-distance"
-        />
-        <Stat label={t('metric.elapsed')} value={formatDuration(stats.movingTimeS)} />
-        <Stat
-          label={t('summary.averagePower')}
-          value={formatInt(stats.averagePowerW)}
-          unit={t('unit.watt')}
-        />
-        <Stat label={t('summary.ascent')} value={formatMeters(stats.ascentM)} unit={t('unit.m')} />
-      </div>
+      <RideStatsView ride={ride} />
       {saveState !== 'idle' && (
         <p
           className={saveState === 'failed' ? 'notice notice-error' : 'hint'}
@@ -70,19 +35,8 @@ export function RideSummaryPanel() {
           )}
         </p>
       )}
-      <div className="actions">
-        <button type="button" disabled={exporting} onClick={() => void exportFit()}>
-          {t('summary.exportFit')}
-        </button>
-      </div>
-      {message && (
-        <p
-          className={message.kind === 'ok' ? 'notice' : 'notice notice-error'}
-          role={message.kind === 'error' ? 'alert' : 'status'}
-        >
-          {message.text}
-        </p>
-      )}
+      <FitExportButton ride={ride} />
+      <RideReportView ride={ride} />
     </div>
   )
 }
