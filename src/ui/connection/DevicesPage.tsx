@@ -2,6 +2,7 @@ import { SimulatedTrainer } from '../../devices/sim/SimulatedTrainer.ts'
 import { useDeviceStore } from '../../store/deviceStore.ts'
 import { t } from '../i18n/index.ts'
 import { GradeControl } from './GradeControl.tsx'
+import { GradeTestRecorder } from './GradeTestRecorder.tsx'
 import { HeartRatePanel } from './HeartRatePanel.tsx'
 import { SimulatorPanel } from './SimulatorPanel.tsx'
 import { TrainerPanel } from './TrainerPanel.tsx'
@@ -22,6 +23,7 @@ export function DevicesPage() {
         <div className="panels">
           <TrainerPanel />
           <GradeControl />
+          <GradeTestRecorder />
           <HeartRatePanel />
           {trainer instanceof SimulatedTrainer && <SimulatorPanel trainer={trainer} />}
         </div>

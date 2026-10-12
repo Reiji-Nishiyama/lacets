@@ -89,6 +89,8 @@ export class RideRecorder {
       cadenceRpm: s.cadenceRpm,
       heartRateBpm: s.heartRateBpm,
       grade: s.position.grade,
+      trainerGrade: s.trainerGrade,
+      trainerSpeedMps: s.trainerSpeedMps,
     }
     if (this.samples[this.samples.length - 1]?.timestampMs === timestampMs) {
       this.samples[this.samples.length - 1] = sample

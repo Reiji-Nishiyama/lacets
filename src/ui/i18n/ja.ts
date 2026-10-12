@@ -203,6 +203,16 @@ export const ja = {
   'settings.show': '表示',
   'settings.hide': '隠す',
 
+  'diagnostics.heading': '勾配テストの記録（キャリブレーション用）',
+  'diagnostics.hint':
+    '記録中は 1 秒ごとに、勾配・パワー・ケイデンス・心拍・トレーナーの速度を残します。ギアとケイデンスを固定し、勾配を 0% → 4% → 8% と 1 分ずつ変えて踏み、CSV を書き出してください。',
+  'diagnostics.start': '記録を開始',
+  'diagnostics.stop': '記録を停止',
+  'diagnostics.count': '{count} 秒分を記録',
+  'diagnostics.export': 'CSV を書き出す',
+  'diagnostics.rideExport': '診断用 CSV を書き出す',
+  'diagnostics.exported': 'CSV を書き出しました',
+
   'error.connectFailed': '接続できませんでした: {detail}',
   'error.commandFailed': 'トレーナーへの送信に失敗しました: {detail}',
 } as const

@@ -90,3 +90,4 @@ docs/
 - `docs/03-roadmap.md` マイルストーンとタスク（MVP = M0〜M2、走行動画は M8 に後回し）
 - `docs/04-external-services.md` 外部サービスの仕様・規約メモ
 - `docs/05-ble-ftms.md` Bluetooth FTMS プロトコルメモ
+- `docs/06-calibration.md` 負荷のキャリブレーション（#7）の手順とデータの扱い

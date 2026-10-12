@@ -1,4 +1,5 @@
 import { useRideStore } from '../../store/rideStore.ts'
+import { DiagnosticsCsvButton } from '../common/DiagnosticsCsvButton.tsx'
 import { FitExportButton } from '../common/FitExportButton.tsx'
 import { t } from '../i18n/index.ts'
 import { RideReportView } from '../report/RideReportView.tsx'
@@ -36,6 +37,7 @@ export function RideSummaryPanel() {
         </p>
       )}
       <FitExportButton ride={ride} />
+      <DiagnosticsCsvButton ride={ride} />
       <RideReportView ride={ride} />
     </div>
   )
