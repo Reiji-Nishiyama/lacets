@@ -6,34 +6,18 @@ import { HeartRatePanel } from './HeartRatePanel.tsx'
 import { SimulatorPanel } from './SimulatorPanel.tsx'
 import { TrainerPanel } from './TrainerPanel.tsx'
 
-export function ConnectionTestPage({ simulator }: { simulator: boolean }) {
+/** トレーナー・心拍計の接続と、勾配を手動で送る接続テスト */
+export function DevicesPage() {
   const trainer = useDeviceStore((s) => s.devices.trainer)
-  const error = useDeviceStore((s) => s.error)
 
   return (
-    <main className="page">
-      <header className="page-header">
-        <h1>{t('app.name')}</h1>
-        <p className="subtitle">{t('connectionTest.title')}</p>
-      </header>
-
-      {simulator && <p className="notice">{t('connectionTest.simulatorNotice')}</p>}
-
+    <section>
+      <h2 className="page-title">{t('devices.title')}</h2>
       {!trainer && (
         <p className="notice notice-warn" role="alert">
-          {t('connectionTest.unsupportedBrowser')}{' '}
-          <a href="?sim=1">{t('connectionTest.trySimulator')}</a>
+          {t('devices.unsupportedBrowser')} <a href="?sim=1">{t('devices.trySimulator')}</a>
         </p>
       )}
-
-      {error && (
-        <p className="notice notice-error" role="alert">
-          {t(error.kind === 'connectFailed' ? 'error.connectFailed' : 'error.commandFailed', {
-            detail: error.detail,
-          })}
-        </p>
-      )}
-
       {trainer && (
         <div className="panels">
           <TrainerPanel />
@@ -42,6 +26,6 @@ export function ConnectionTestPage({ simulator }: { simulator: boolean }) {
           {trainer instanceof SimulatedTrainer && <SimulatorPanel trainer={trainer} />}
         </div>
       )}
-    </main>
+    </section>
   )
 }

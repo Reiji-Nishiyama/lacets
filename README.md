@@ -20,3 +20,13 @@ npm run format       # Prettier で整形
 
 E2E の初回は `npx playwright install chromium` でブラウザを入れる。
 Linux / WSL で共有ライブラリ不足（`libgbm.so.1` 等）のエラーが出る場合は `sudo npx playwright install-deps chromium` を実行する。
+
+### 環境変数（任意）
+
+| 変数                 | 内容                                                |
+| -------------------- | --------------------------------------------------- |
+| `VITE_MAP_STYLE_URL` | MapLibre の地図スタイル URL。未指定なら OpenFreeMap |
+
+### テスト用ルート
+
+`test/fixtures/synthetic-lacets.gpx` は架空の 21 ヘアピン・13.8 km の登り（`node scripts/generate-synthetic-lacets.mjs` で再生成）。`?sim=1` で取り込んで走行を試せる。

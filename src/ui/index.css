@@ -16,6 +16,12 @@
   --ok: #3ebd93;
   --warn: #f0b429;
   --error: #ef4e4e;
+  /* 勾配の色分け（<3%, <6%, <9%, <12%, それ以上） */
+  --grade-0: #4c9f70;
+  --grade-1: #c9b23a;
+  --grade-2: #e8862e;
+  --grade-3: #d9480f;
+  --grade-4: #9c1c1c;
   background: var(--bg);
   color: var(--text);
 }
@@ -40,13 +46,58 @@ a {
   padding: 1.5rem 1rem 3rem;
 }
 
-.page-header h1 {
-  margin: 0;
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
 }
 
-.subtitle {
-  margin: 0.25rem 0 1rem;
+.app-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.tab {
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
   color: var(--muted);
+  padding: 0.4rem 0.8rem;
+}
+
+.tab:hover:not(:disabled) {
+  background: transparent;
+  color: var(--text);
+}
+
+.tab-active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+.page-title {
+  margin: 0 0 1rem;
+  font-size: 1.3rem;
+}
+
+.page-title-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.page-title-row .page-title {
+  margin: 0;
 }
 
 .notice {
@@ -161,10 +212,6 @@ input[type='range'] {
   margin-left: 0.5rem;
 }
 
-.actions {
-  margin-top: 1rem;
-}
-
 button {
   font: inherit;
   padding: 0.6rem 1.2rem;
@@ -183,4 +230,236 @@ button:hover:not(:disabled) {
 button:disabled {
   opacity: 0.4;
   cursor: default;
+}
+
+.button-primary {
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 600;
+}
+
+.button-subtle {
+  border-color: var(--border);
+  color: var(--muted);
+}
+
+.button-subtle:hover:not(:disabled) {
+  background: var(--border);
+  color: var(--text);
+}
+
+.actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ルート一覧 */
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.drop-zone-over {
+  border-color: var(--accent);
+  background: var(--panel);
+}
+
+.drop-zone p {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+}
+
+.route-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.route-item {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.route-open {
+  flex: 1;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  border-color: var(--border);
+  background: var(--panel);
+  color: var(--text);
+}
+
+.route-open:hover:not(:disabled) {
+  background: var(--border);
+  color: var(--text);
+}
+
+.route-name {
+  font-weight: 600;
+}
+
+.route-stats {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* 統計・メトリクス */
+.stats,
+.ride-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.ride-metrics .stat-value {
+  font-size: 2.2rem;
+}
+
+.stat-label {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.stat-value {
+  font-size: 1.6rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-unit {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-left: 0.25rem;
+}
+
+/* 地図・プロファイル */
+.map {
+  height: 360px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 1rem 0;
+  background: var(--panel);
+}
+
+.map-unavailable {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  padding: 1rem;
+  text-align: center;
+}
+
+.elevation-profile {
+  position: relative;
+  background: var(--panel);
+  border-radius: 12px;
+  margin: 1rem 0;
+  padding: 0.5rem 0.5rem 1.5rem;
+}
+
+.elevation-profile svg {
+  display: block;
+  width: 100%;
+  height: 160px;
+}
+
+.axis-label {
+  position: absolute;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.axis-top {
+  top: 0.4rem;
+  left: 0.75rem;
+}
+
+.axis-bottom {
+  bottom: 0.3rem;
+  left: 0.75rem;
+}
+
+.axis-end {
+  bottom: 0.3rem;
+  right: 0.75rem;
+}
+
+.profile-marker {
+  stroke: var(--text);
+  stroke-width: 3;
+}
+
+/* 走行 */
+.ride-status {
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.ride-status-running {
+  color: var(--ok);
+  border-color: var(--ok);
+}
+
+.ride-status-paused,
+.ride-status-autoPaused {
+  color: var(--warn);
+  border-color: var(--warn);
+}
+
+.ride-status-finished {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.summary {
+  margin-bottom: 1rem;
+}
+
+.summary h3 {
+  margin-top: 0;
+}
+
+/* 設定 */
+.settings .field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.settings .field > span:first-child {
+  min-width: 8rem;
+}
+
+.settings input[type='number'],
+.settings select {
+  font: inherit;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.settings input[type='number'] {
+  width: 6rem;
+}
+
+.field-unit {
+  color: var(--muted);
 }

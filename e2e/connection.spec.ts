@@ -1,8 +1,9 @@
 import { expect, test } from '@playwright/test'
 
-test.describe('接続テスト（シミュレータ）', () => {
+test.describe('デバイス接続（シミュレータ）', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/?sim=1')
+    await page.getByRole('button', { name: 'デバイス' }).click()
     await page.getByRole('button', { name: 'トレーナーに接続' }).click()
     await expect(page.getByTestId('trainer-state')).toHaveText('接続済み')
   })
