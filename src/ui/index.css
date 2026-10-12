@@ -693,3 +693,32 @@ button:disabled {
 .usage-high {
   color: var(--warn);
 }
+
+/* 開始地点・向き */
+.elevation-profile.selectable svg {
+  cursor: crosshair;
+}
+
+.profile-before-start {
+  fill: rgb(0 0 0 / 45%);
+}
+
+.profile-start-marker {
+  stroke: var(--ok);
+  stroke-width: 3;
+}
+
+.start-point {
+  margin-top: 1rem;
+}
+
+.start-point h3 {
+  margin: 0;
+}
+
+.direction-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+}

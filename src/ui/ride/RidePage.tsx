@@ -93,7 +93,7 @@ export function RidePage() {
         />
         <Stat
           label={t('metric.distance')}
-          value={formatKm(snapshot.distanceM, 2)}
+          value={formatKm(snapshot.travelledM, 2)}
           unit={t('unit.km')}
           testId="ride-distance"
         />
@@ -101,6 +101,7 @@ export function RidePage() {
           label={t('metric.remaining')}
           value={formatKm(snapshot.remainingM, 2)}
           unit={t('unit.km')}
+          testId="ride-remaining"
         />
       </div>
 

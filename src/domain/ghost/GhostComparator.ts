@@ -9,30 +9,34 @@ export interface GhostState {
 
 /**
  * 走行中にゴーストと比べる（docs/02 §7: Δt = tUser(d) − tGhost(d)）。
- * ゴーストがルートの途中（coveredFromM）から始まる場合は、ユーザーがそこを通過した時刻を基準にする。
+ * 比べ始める地点（ユーザーの開始地点とゴーストの開始距離の遠い方）を基準に、
+ * そこからの経過時間どうしを比べる。ルートの途中から走り始めた場合や、
+ * ゴーストがルートの途中から始まる場合も同じ扱いになる。
  */
 export class GhostComparator {
   private readonly ghost: TimedTrack
-  /** ユーザーがゴーストの開始距離を通過した経過時間 */
-  private userStartS: number | null
+  /** 比べ始めた時点のユーザーの経過時間と、その地点のゴーストの時刻 */
+  private base: { userS: number; ghostS: number } | null = null
 
   constructor(ghost: TimedTrack) {
     this.ghost = ghost
-    this.userStartS = ghost.coveredFromM <= 0 ? 0 : null
   }
 
+  /** 走行開始時（経過 0 秒）から順に呼ぶこと。最初に比べられた地点を基準にする */
   update(distanceM: number, elapsedS: number): GhostState {
-    if (this.userStartS === null && distanceM >= this.ghost.coveredFromM) {
-      this.userStartS = elapsedS
+    if (!this.base && distanceM >= this.ghost.coveredFromM) {
+      const ghostS = this.ghost.timeAt(distanceM)
+      // ゴーストの終点より先から走り始めた場合は比べられない
+      if (ghostS !== null) this.base = { userS: elapsedS, ghostS }
     }
-    if (this.userStartS === null) {
+    if (!this.base) {
       return { deltaS: null, ghostDistanceM: this.ghost.coveredFromM }
     }
-    const userS = elapsedS - this.userStartS
+    const userS = elapsedS - this.base.userS
     const ghostS = this.ghost.timeAt(distanceM)
     return {
-      deltaS: ghostS === null ? null : userS - ghostS,
-      ghostDistanceM: this.ghost.distanceAt(userS),
+      deltaS: ghostS === null ? null : userS - (ghostS - this.base.ghostS),
+      ghostDistanceM: this.ghost.distanceAt(this.base.ghostS + userS),
     }
   }
 }

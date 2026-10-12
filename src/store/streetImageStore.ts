@@ -8,7 +8,7 @@ import {
 } from '../domain/media/streetImages.ts'
 import type { MediaSettings } from '../media/mediaSettings.ts'
 import { searchersFor, searchStreetImages, type SearchError } from '../media/streetImageSearch.ts'
-import type { StoredRoute } from './db.ts'
+import type { RouteVariant } from './routeVariant.ts'
 
 export interface RouteImageIndex {
   status: 'loading' | 'ready'
@@ -20,7 +20,7 @@ export interface RouteImageIndex {
 }
 
 interface StreetImageState {
-  /** キーは routeId と使うプロバイダー（設定が変われば検索し直す） */
+  /** キーはルートの向き（variantKey）と使うプロバイダー（設定が変われば検索し直す） */
   byKey: Record<string, RouteImageIndex>
 }
 
@@ -29,14 +29,14 @@ export const useStreetImageStore = create<StreetImageState>(() => ({ byKey: {} }
 /** 端末には保存せず、このセッションの間だけ覚えておく */
 const pending = new Map<string, AbortController>()
 
-export function streetImageKey(routeId: string, settings: MediaSettings): string {
+export function streetImageKey(variantKey: string, settings: MediaSettings): string {
   const providers = Object.keys(searchersFor(settings)).sort().join('+')
-  return `${routeId}/${providers}/${settings.mapillaryToken.trim().length > 0 ? 'm' : ''}`
+  return `${variantKey}/${providers}/${settings.mapillaryToken.trim().length > 0 ? 'm' : ''}`
 }
 
 /** ルートの路上画像の索引を用意する（検索済み・検索中なら何もしない） */
-export function ensureStreetImages(route: StoredRoute, settings: MediaSettings): string {
-  const key = streetImageKey(route.id, settings)
+export function ensureStreetImages(route: RouteVariant, settings: MediaSettings): string {
+  const key = streetImageKey(route.variantKey, settings)
   if (useStreetImageStore.getState().byKey[key] || pending.has(key)) return key
   const searchers = searchersFor(settings)
   const empty: RouteImageIndex = {

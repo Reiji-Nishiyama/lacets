@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { RouteParseError } from '../../domain/course/parsers/RouteParseError.ts'
 import type { GhostRef } from '../../recording/types.ts'
-import type { StoredRoute } from '../../store/db.ts'
+import type { RouteVariant } from '../../store/routeVariant.ts'
 import { listGhostOptions, type GhostOption } from '../../store/ghosts.ts'
 import { addReferenceFromFile } from '../../store/referenceRepository.ts'
 import { formatDateTime, formatPercent } from '../format.ts'
@@ -15,7 +15,7 @@ export function GhostPicker({
   value,
   onChange,
 }: {
-  route: StoredRoute
+  route: RouteVariant
   value: GhostRef | null
   onChange: (ref: GhostRef | null) => void
 }) {

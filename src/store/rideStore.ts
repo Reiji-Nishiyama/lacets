@@ -8,15 +8,15 @@ import { keepScreenOn, type WakeLockHandle } from '../platform/wakeLock.ts'
 import { RideRecorder } from '../recording/RideRecorder.ts'
 import type { RecordedRide } from '../recording/types.ts'
 import { RideEngine, type RideSnapshot } from '../ride/RideEngine.ts'
-import type { StoredRoute } from './db.ts'
 import type { LoadedGhost } from './ghosts.ts'
+import type { RouteVariant } from './routeVariant.ts'
 import { saveRide } from './rideRepository.ts'
 
 /** 走行記録の端末内保存の状態 */
 export type RideSaveState = 'idle' | 'saving' | 'saved' | 'failed'
 
 interface RideState {
-  route: StoredRoute | null
+  route: RouteVariant | null
   course: Course | null
   snapshot: RideSnapshot | null
   /** 走行中に比べているゴースト */
@@ -65,10 +65,12 @@ async function persist(ride: RecordedRide) {
 
 export const rideActions = {
   start(
-    route: StoredRoute,
+    route: RouteVariant,
     devices: Devices,
     settings: RiderSettings,
     ghost: LoadedGhost | null = null,
+    /** 走り始めるルート上の距離（#5） */
+    startDistanceM = 0,
   ) {
     cleanup()
     if (!devices.trainer) throw new Error('トレーナーがありません')
@@ -78,6 +80,7 @@ export const rideActions = {
       trainer: devices.trainer,
       heartRate: devices.heartRate,
       settings,
+      startDistanceM,
     })
     engine = e
     // レコーダーは先に購読させ、終了の状態変化を記録し終えてから下で締める
@@ -87,6 +90,8 @@ export const rideActions = {
       routeName: route.name,
       settings,
       ...(ghost ? { ghost: { ...ghost.ref, name: ghost.name } } : {}),
+      ...(route.reversed ? { reversed: true } : {}),
+      ...(e.snapshot.distanceM > 0 ? { startDistanceM: e.snapshot.distanceM } : {}),
     })
     const comparator = ghost ? new GhostComparator(ghost.track) : null
     unsubs.push(

@@ -43,11 +43,13 @@ export function ghostFromReference(
 /** Lacets で記録した走行（同じルートの距離軸）をゴーストにする */
 export function ghostFromRecordedRide(
   samples: readonly { distanceM: number; elapsedS: number; powerW: number }[],
+  /** 走り始めたルート上の距離（ルートの途中から走った場合） */
+  startDistanceM = 0,
 ): TimedTrack {
   // 走行時間（一時停止を除く）は静止状態の 0 秒から始まるので、待機の除外はしない
   return TimedTrack.fromSamples(
     [
-      { distanceM: 0, timeS: 0 },
+      { distanceM: startDistanceM, timeS: 0 },
       ...samples.map((s) => ({ distanceM: s.distanceM, timeS: s.elapsedS, powerW: s.powerW })),
     ],
     0,

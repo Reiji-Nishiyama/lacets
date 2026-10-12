@@ -17,6 +17,14 @@ describe('computeRideStats', () => {
     expect(stats.maxHeartRateBpm).toBe(140)
   })
 
+  it('途中から走った記録の距離・平均速度は開始地点からの差', () => {
+    const base = sampleRide()
+    const samples = base.samples.map((x) => ({ ...x, distanceM: 5000 + x.distanceM }))
+    const stats = computeRideStats(samples, base.startedAtMs, base.endedAtMs, 5000)
+    expect(stats.distanceM).toBe(450)
+    expect(stats.averageSpeedMps).toBeCloseTo(5)
+  })
+
   it('サンプルがなくても落ちない', () => {
     const stats = computeRideStats([], 0, 1000)
     expect(stats.distanceM).toBe(0)

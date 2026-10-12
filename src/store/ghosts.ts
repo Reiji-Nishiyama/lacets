@@ -2,7 +2,7 @@ import type { ProfilePoint } from '../domain/course/types.ts'
 import { ghostFromRecordedRide, ghostFromReference } from '../domain/ghost/ghostSources.ts'
 import type { TimedTrack } from '../domain/ghost/TimedTrack.ts'
 import type { GhostRef } from '../recording/types.ts'
-import type { StoredRoute } from './db.ts'
+import type { RouteVariant } from './routeVariant.ts'
 import { getReference, listReferences } from './referenceRepository.ts'
 import { getRide, listRides } from './rideRepository.ts'
 
@@ -30,11 +30,11 @@ const MIN_COVERAGE = 0.2
 const projectionCache = new Map<string, ReturnType<typeof ghostFromReference>>()
 
 function projectCached(
-  routeId: string,
+  variantKey: string,
   profile: readonly ProfilePoint[],
   ref: { id: string; samples: Parameters<typeof ghostFromReference>[1]['samples'] },
 ) {
-  const key = `${routeId}/${ref.id}`
+  const key = `${variantKey}/${ref.id}`
   let g = projectionCache.get(key)
   if (!g) {
     g = ghostFromReference(profile, ref)
@@ -43,11 +43,13 @@ function projectCached(
   return g
 }
 
-/** ルートで使えるゴースト: 同じルートの過去の走行と、ルートに重なる実走データ */
-export async function listGhostOptions(route: StoredRoute): Promise<GhostOption[]> {
+/** ルートで使えるゴースト: 同じルート・同じ向きの過去の走行と、ルートに重なる実走データ */
+export async function listGhostOptions(route: RouteVariant): Promise<GhostOption[]> {
   const [rides, refs] = await Promise.all([listRides(), listReferences()])
   const rideOptions: GhostOption[] = rides
-    .filter((r) => r.routeId === route.id && r.samples.length > 0)
+    .filter(
+      (r) => r.routeId === route.id && !!r.reversed === route.reversed && r.samples.length > 0,
+    )
     .map((r) => ({
       ref: { kind: 'ride', id: r.id },
       name: r.routeName,
@@ -55,7 +57,7 @@ export async function listGhostOptions(route: StoredRoute): Promise<GhostOption[
       coverageRatio: Math.min(1, r.stats.distanceM / route.stats.distanceM),
     }))
   const refOptions: GhostOption[] = refs.flatMap((ref) => {
-    const { coverageRatio } = projectCached(route.id, route.profile, ref)
+    const { coverageRatio } = projectCached(route.variantKey, route.profile, ref)
     if (coverageRatio < MIN_COVERAGE) return []
     return [
       {
@@ -71,7 +73,7 @@ export async function listGhostOptions(route: StoredRoute): Promise<GhostOption[
 
 export async function loadGhost(
   ref: GhostRef,
-  route: Pick<StoredRoute, 'id' | 'profile'>,
+  route: Pick<RouteVariant, 'variantKey' | 'profile'>,
 ): Promise<LoadedGhost | null> {
   if (ref.kind === 'ride') {
     const ride = await getRide(ref.id)
@@ -79,14 +81,14 @@ export async function loadGhost(
     return {
       ref,
       name: ride.routeName,
-      track: ghostFromRecordedRide(ride.samples),
+      track: ghostFromRecordedRide(ride.samples, ride.startDistanceM ?? 0),
       coverageRatio: 1,
       riderMassKg: ride.settings.riderMassKg,
     }
   }
   const reference = await getReference(ref.id)
   if (!reference) return null
-  const g = projectCached(route.id, route.profile, reference)
+  const g = projectCached(route.variantKey, route.profile, reference)
   return {
     ref,
     name: reference.name,

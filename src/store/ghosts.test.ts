@@ -10,13 +10,15 @@ import { addReferenceFromFile } from './referenceRepository.ts'
 import { buildRideReport } from './rideReport.ts'
 import { saveRide } from './rideRepository.ts'
 import { addRouteFromFile } from './routeRepository.ts'
+import { routeVariant } from './routeVariant.ts'
 
 beforeEach(async () => {
   await Promise.all([db.routes.clear(), db.rides.clear(), db.referenceRides.clear()])
 })
 
 async function setup() {
-  const route = await addRouteFromFile('lacets.gpx', readFixture('synthetic-lacets.gpx'))
+  const stored = await addRouteFromFile('lacets.gpx', readFixture('synthetic-lacets.gpx'))
+  const route = routeVariant(stored, false)
   const sim = simulatedReference(route.profile, { powerW: 250, waitS: 30 })
   const gpx = referenceToGpx('前年の実走', Date.parse('2025-06-08T06:30:00Z'), sim.samples)
   const reference = await addReferenceFromFile('2025.gpx', new TextEncoder().encode(gpx))
@@ -54,6 +56,24 @@ describe('listGhostOptions / loadGhost', () => {
     expect(ghost?.track.timeAt(100)).toBe(20)
   })
 
+  it('逆方向では、同じ向きの過去の走行だけを選択肢にし、順方向の実走は重ならない', async () => {
+    const { route } = await setup()
+    const reversed = routeVariant(route, true)
+    await saveRide({ ...sampleRide(), routeId: route.id })
+    await saveRide({ ...sampleRide(), id: 'rev', routeId: route.id, reversed: true })
+    const options = await listGhostOptions(reversed)
+    expect(options.map((o) => o.ref)).toEqual([{ kind: 'ride', id: 'rev' }])
+  })
+
+  it('途中から走った過去の走行のゴーストは、その地点から始まる', async () => {
+    const { route } = await setup()
+    const samples = sampleRide().samples.map((x) => ({ ...x, distanceM: 5000 + x.distanceM }))
+    await saveRide({ ...sampleRide(), routeId: route.id, samples, startDistanceM: 5000 })
+    const ghost = await loadGhost({ kind: 'ride', id: 'ride-1' }, route)
+    expect(ghost?.track.coveredFromM).toBe(5000)
+    expect(ghost?.track.timeAt(5100)).toBe(20)
+  })
+
   it('見つからなければ null', async () => {
     const { route } = await setup()
     expect(await loadGhost({ kind: 'ride', id: 'nope' }, route)).toBeNull()
@@ -87,6 +107,28 @@ describe('buildRideReport', () => {
     expect(first.user?.averagePowerW).toBeCloseTo(250)
     expect(first.ghost?.averagePowerW).toBeCloseTo(250)
     expect(first.user?.wattsPerKg).toBeCloseTo(250 / 65)
+  })
+
+  it('途中から走った記録は、その地点からの 1 km ごと（端数あり）で比べる', async () => {
+    const { route } = await setup()
+    const samples = Array.from({ length: 300 }, (_, i) => ({
+      ...sampleRide().samples[0]!,
+      elapsedS: i + 1,
+      distanceM: 2400 + (i + 1) * 5,
+      powerW: 220,
+    }))
+    const report = await buildRideReport({
+      ...sampleRide(),
+      routeId: route.id,
+      samples,
+      startDistanceM: 2400,
+      stats: { ...sampleRide().stats, distanceM: 1500 },
+    })
+    expect(report.kilometers.map((r) => [r.segment.startM, r.segment.endM])).toEqual([
+      [2400, 3000],
+      [3000, 3900],
+    ])
+    expect(report.kilometers[0]!.user?.timeS).toBeCloseTo(120)
   })
 
   it('ゴーストなしなら自分の区間タイムだけ', async () => {

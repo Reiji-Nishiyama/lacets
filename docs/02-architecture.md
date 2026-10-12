@@ -37,6 +37,7 @@
 | A6 | Garmin は手動ファイル取り込み | Garmin Connect の Courses API はコースを Garmin へ送る方向のみで、ユーザーが作ったコースを読む API ではない。さらに承認された法人向けプログラム |
 | A7 | BLE をトランスポート層で抽象化 | iPad は Safari で Web Bluetooth が使えない。Bluefy では Web Bluetooth のまま動くが、最終的には Capacitor のネイティブ BLE に載せ替えるため、最初から差し替え可能にしておく |
 | A8 | iPad は Bluefy → Capacitor の二段階 | Bluefy なら追加開発ゼロで早期に検証できる。ただしサードパーティ製ブラウザへの依存は長期的なリスクのため、安定後に Capacitor アプリ化する |
+| A9 | デスクトップアプリ化（Electron 等）は採用しない（2026-10-12） | Strava の client_secret を配布物に埋め込めない問題は解決しない（サーバー側の中継は結局必要）。iPad には使えない。Mac の署名（Apple Developer Program）や Windows の警告など配布の手間が増える。Bluetooth は BleTransport の差し替えで対応できるので、必要になれば再検討する |
 
 ## 3. データモデル（IndexedDB）
 ```ts
@@ -94,6 +95,11 @@ m_eff·dv/dt = P / max(v, v_min) − (F_grav + F_roll + F_aero)
 - テスト: 平坦 200W・75kg で約 33〜35 km/h、8% 登坂 250W・70kg で約 14 km/h 前後になることを確認（許容誤差は実装時に設定）
 
 FTMS へ送るパラメータ: grade、Crr、Cw（= 0.5·ρ·CdA [kg/m]）、風速 0。トレーナー内部の負荷計算はトレーナー側の前提（体重等）に依存するため、体感負荷とアプリの速度計算は厳密には一致しない点を許容する。
+
+## 5.1 走行の向きと開始地点（#5, #6）
+- 逆方向: 取り込んだ生の点列を反転して `buildProfile` し直す（`domain/course/reverse.ts`）。ルートは 1 件のまま、走るときに向きを選ぶ（`store/routeVariant.ts` の `RouteVariant`）。ゴースト・レポート・路上画像のキャッシュは向きごとに分ける
+- 開始地点: RideEngine に開始距離を渡す。記録のサンプルの distanceM はルート上の位置、走行距離（stats、FIT の distance）は開始地点からの差。ゴーストとの比較は、比べ始めた地点を基準にした経過時間どうしで行う（`GhostComparator`）
+- 区間比較レポートの 1 km ごとの区間は、ルート上の km の区切りに合わせ、最初と最後は端数
 
 ## 6. ルート処理（domain/course）
 1. 取り込み: GPX（trkpt/rtept）、TCX、FIT（record / course_point）を `RoutePoint[]` に正規化

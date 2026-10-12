@@ -23,11 +23,17 @@ export function ElevationProfile({
   profile,
   markerDistanceM,
   ghostDistanceM,
+  startDistanceM,
+  onSelectDistance,
 }: {
   profile: readonly ProfilePoint[]
   markerDistanceM?: number
   /** ゴーストの位置（点線で表示） */
   ghostDistanceM?: number
+  /** 走り始める地点（それより手前を暗くする） */
+  startDistanceM?: number
+  /** クリックした地点の距離を返す（開始地点の選択） */
+  onSelectDistance?: (distanceM: number) => void
 }) {
   const { columns, minE, maxE, totalM } = useMemo(() => buildColumns(profile), [profile])
   const plotW = WIDTH - PAD.left - PAD.right
@@ -38,12 +44,21 @@ export function ElevationProfile({
   const baseY = PAD.top + plotH
 
   return (
-    <div className="elevation-profile">
+    <div className={`elevation-profile${onSelectDistance ? ' selectable' : ''}`}>
       <svg
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         role="img"
         aria-label={t('profile.label')}
         preserveAspectRatio="none"
+        onClick={
+          onSelectDistance
+            ? (e) => {
+                const rect = e.currentTarget.getBoundingClientRect()
+                const ratio = (e.clientX - rect.left) / rect.width
+                onSelectDistance(Math.min(1, Math.max(0, ratio)) * totalM)
+              }
+            : undefined
+        }
       >
         {colorRuns(columns).map((run, i) => (
           <polygon
@@ -57,6 +72,26 @@ export function ElevationProfile({
             fill={gradeColor(run[0]!.grade)}
           />
         ))}
+        {startDistanceM !== undefined && startDistanceM > 0 && (
+          <>
+            <rect
+              className="profile-before-start"
+              x={x(0)}
+              y={0}
+              width={x(startDistanceM) - x(0)}
+              height={HEIGHT}
+            />
+            <line
+              className="profile-start-marker"
+              data-testid="profile-start-marker"
+              vectorEffect="non-scaling-stroke"
+              x1={x(startDistanceM)}
+              x2={x(startDistanceM)}
+              y1={PAD.top}
+              y2={baseY}
+            />
+          </>
+        )}
         {ghostDistanceM !== undefined && (
           <line
             className="profile-ghost-marker"

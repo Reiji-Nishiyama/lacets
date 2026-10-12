@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import type { StreetImageProvider } from '../../domain/media/streetImages.ts'
-import type { StoredRoute } from '../../store/db.ts'
+import type { RouteVariant } from '../../store/routeVariant.ts'
 import { useSettingsStore } from '../../store/settingsStore.ts'
 import {
   ensureStreetImages,
@@ -11,10 +11,10 @@ import { formatPercent } from '../format.ts'
 import { t } from '../i18n/index.ts'
 
 /** 事前確認画面: ルート沿いの路上画像のカバー率（M5「ルートごとの画像カバー率表示」） */
-export function StreetImageCoverage({ route }: { route: StoredRoute }) {
+export function StreetImageCoverage({ route }: { route: RouteVariant }) {
   const media = useSettingsStore((s) => s.media)
   const loaded = useSettingsStore((s) => s.loaded)
-  const key = streetImageKey(route.id, media)
+  const key = streetImageKey(route.variantKey, media)
   const state = useStreetImageStore((s) => s.byKey[key])
 
   useEffect(() => {

@@ -12,8 +12,11 @@ export function computeRideStats(
   samples: RideSample[],
   startedAtMs: number,
   endedAtMs: number,
+  /** 走り始めたルート上の距離。サンプルの distanceM はルート上の位置なので、差を走行距離にする */
+  startDistanceM = 0,
 ): RideStats {
   const last = samples[samples.length - 1]
+  const distanceM = last ? Math.max(0, last.distanceM - startDistanceM) : 0
   let ascentM = 0
   for (let i = 1; i < samples.length; i++) {
     const de = samples[i]!.elevationM - samples[i - 1]!.elevationM
@@ -25,11 +28,11 @@ export function computeRideStats(
   return {
     movingTimeS,
     elapsedWallS: Math.max(0, (endedAtMs - startedAtMs) / 1000),
-    distanceM: last?.distanceM ?? 0,
+    distanceM,
     ascentM,
     averagePowerW: average(samples.map((s) => s.powerW)) ?? 0,
     maxPowerW: Math.max(0, ...samples.map((s) => s.powerW)),
-    averageSpeedMps: movingTimeS > 0 ? (last?.distanceM ?? 0) / movingTimeS : 0,
+    averageSpeedMps: movingTimeS > 0 ? distanceM / movingTimeS : 0,
     maxSpeedMps: Math.max(0, ...samples.map((s) => s.speedMps)),
     averageCadenceRpm: average(cadence),
     averageHeartRateBpm: average(hr),
