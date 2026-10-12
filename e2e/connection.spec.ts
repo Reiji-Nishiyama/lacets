@@ -42,4 +42,27 @@ test.describe('デバイス接続（シミュレータ）', () => {
     await page.getByRole('button', { name: '切断' }).first().click()
     await expect(page.getByTestId('trainer-state')).toHaveText('未接続')
   })
+
+  test('勾配テストを記録して CSV に書き出せる（#7）', async ({ page }) => {
+    await page.addInitScript(() => {
+      delete (globalThis as { showSaveFilePicker?: unknown }).showSaveFilePicker
+    })
+    await page.reload()
+    await page.getByRole('button', { name: 'デバイス' }).click()
+    await page.getByRole('button', { name: 'トレーナーに接続' }).click()
+    await page.getByRole('button', { name: '記録を開始' }).click()
+    await page.getByRole('slider', { name: '勾配' }).fill('4')
+    await expect(page.getByTestId('grade-test-count')).toHaveText(/^[3-9] 秒分を記録$/, {
+      timeout: 6000,
+    })
+    await page.getByRole('button', { name: '記録を停止' }).click()
+    const downloadPromise = page.waitForEvent('download')
+    await page.getByRole('button', { name: 'CSV を書き出す' }).click()
+    const download = await downloadPromise
+    expect(download.suggestedFilename()).toMatch(/^lacets-grade-test-\d{8}-\d{4}\.csv$/)
+    const { readFile } = await import('node:fs/promises')
+    const csv = await readFile(await download.path(), 'utf8')
+    expect(csv).toContain('time,elapsed_s,grade_pct,power_w')
+    expect(csv).toMatch(/,4\.00,\d+,/)
+  })
 })

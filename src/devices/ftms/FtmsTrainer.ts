@@ -287,6 +287,7 @@ export class FtmsTrainer implements TrainerDevice {
       powerW: d.powerW ?? 0,
       cadenceRpm: d.cadenceRpm,
       heartRateBpm: d.heartRateBpm,
+      trainerSpeedMps: d.speedMps,
       timestampMs: this.now(),
     })
   }

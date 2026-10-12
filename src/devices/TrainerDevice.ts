@@ -17,6 +17,11 @@ export interface TrainerData {
   cadenceRpm?: number
   /** トレーナー経由で心拍が届く場合のみ */
   heartRateBpm?: number
+  /**
+   * トレーナーが報告する速度 [m/s]（フライホイール由来）。走行の計算には使わず（設計原則 3）、
+   * 負荷のキャリブレーション（#7）の診断用に記録する
+   */
+  trainerSpeedMps?: number
   /** 受信時刻（Date.now() と同じ基準）[ms] */
   timestampMs: number
 }

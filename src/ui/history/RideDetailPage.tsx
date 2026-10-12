@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { getRide } from '../../store/rideRepository.ts'
+import { DiagnosticsCsvButton } from '../common/DiagnosticsCsvButton.tsx'
 import { FitExportButton } from '../common/FitExportButton.tsx'
 import { formatDateTime } from '../format.ts'
 import { t } from '../i18n/index.ts'
@@ -30,6 +31,7 @@ export function RideDetailPage({ rideId }: { rideId: string }) {
       </div>
       <RideStatsView ride={ride} />
       <FitExportButton ride={ride} />
+      <DiagnosticsCsvButton ride={ride} />
       <RideReportView ride={ride} />
     </section>
   )

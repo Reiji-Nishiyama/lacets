@@ -34,7 +34,7 @@ describe('FtmsTrainer', () => {
     expect(trainer.capabilities?.gradeRange).toEqual(DEFAULT_GRADE_RANGE)
   })
 
-  it('Indoor Bike Data をパワー・ケイデンスとして通知する（速度は使わない）', async () => {
+  it('Indoor Bike Data をパワー・ケイデンスとして通知する（速度は診断用にだけ渡す）', async () => {
     const t = createFakeFtms()
     const trainer = new FtmsTrainer(t, { now: () => 1234 })
     const received: TrainerData[] = []
@@ -42,7 +42,13 @@ describe('FtmsTrainer', () => {
     await trainer.connect()
     t.notify(FTMS_SERVICE, INDOOR_BIKE_DATA, [0x44, 0x00, 0xb8, 0x0b, 0xb4, 0x00, 0xfa, 0x00])
     expect(received).toEqual([
-      { powerW: 250, cadenceRpm: 90, heartRateBpm: undefined, timestampMs: 1234 },
+      {
+        powerW: 250,
+        cadenceRpm: 90,
+        heartRateBpm: undefined,
+        trainerSpeedMps: expect.closeTo(30 / 3.6, 6),
+        timestampMs: 1234,
+      },
     ])
   })
 

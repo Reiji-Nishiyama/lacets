@@ -15,6 +15,8 @@ export interface DeviceStoreState {
   heartRateState: ConnectionState
   heartRateName: string | undefined
   heartRateBpm: number | null
+  /** デバイス画面の勾配スライダーでトレーナーに送った勾配（勾配テストの記録用） */
+  manualGrade: number
   error: DeviceError | null
 }
 
@@ -27,6 +29,7 @@ const initialState: DeviceStoreState = {
   heartRateState: 'disconnected',
   heartRateName: undefined,
   heartRateBpm: null,
+  manualGrade: 0,
   error: null,
 }
 
@@ -101,6 +104,9 @@ export const deviceActions = {
   },
   disconnectHeartRate() {
     return useDeviceStore.getState().devices.heartRate?.disconnect()
+  },
+  setManualGrade(grade: number) {
+    useDeviceStore.setState({ manualGrade: grade })
   },
   reportCommandError(e: unknown) {
     console.error(e)

@@ -17,6 +17,10 @@ export interface RideSample {
   cadenceRpm: number | null
   heartRateBpm: number | null
   grade: number
+  /** トレーナーに送っていた勾配（難易度適用後）。診断用（#7）、古い記録にはない */
+  trainerGrade?: number | null
+  /** トレーナーが報告する速度。診断用（#7）、古い記録にはない */
+  trainerSpeedMps?: number | null
 }
 
 /** タイマーの開始・停止（一時停止と再開） */

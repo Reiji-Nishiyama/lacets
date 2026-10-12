@@ -21,6 +21,7 @@ export function GradeControl() {
         crr: DEFAULT_CRR,
         cwKgPerM: cwFromCda(DEFAULT_CDA_M2),
       })
+      .then(() => deviceActions.setManualGrade(grade))
       .catch(deviceActions.reportCommandError)
   }, [trainer, state, grade])
 

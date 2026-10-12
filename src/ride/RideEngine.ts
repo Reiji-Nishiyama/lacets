@@ -33,6 +33,8 @@ export interface RideSnapshot {
   position: CoursePosition
   /** トレーナーに最後に送った勾配（難易度適用後） */
   trainerGrade: number | null
+  /** トレーナーが報告する速度（診断用。走行の計算には使わない） */
+  trainerSpeedMps: number | null
 }
 
 /** 1 秒ごとの記録用のティック（M2 3/3 で記録・FIT 出力に使う） */
@@ -142,6 +144,8 @@ export class RideEngine {
           : null,
       position: this.course.positionAt(this.progress.distanceM),
       trainerGrade: this.lastSentGrade,
+      trainerSpeedMps:
+        active && trainerFresh ? (this.latestTrainer?.trainerSpeedMps ?? null) : null,
     }
   }
 
