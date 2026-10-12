@@ -1,6 +1,7 @@
 import type { Course, CoursePosition } from '../domain/course/Course.ts'
 import { cwFromCda } from '../domain/physics/aero.ts'
 import type { PhysicsParams } from '../domain/physics/model.ts'
+import { compensateForTrainerMass } from '../domain/calibration/trainerMass.ts'
 import { GradeThrottle, trainerGrade } from '../domain/ride/gradeCommand.ts'
 import { INITIAL_PROGRESS, stepRide, type RideProgress } from '../domain/ride/rideStep.ts'
 import { physicsParamsFor, type RiderSettings } from '../domain/rider.ts'
@@ -31,7 +32,7 @@ export interface RideSnapshot {
   cadenceRpm: number | null
   heartRateBpm: number | null
   position: CoursePosition
-  /** トレーナーに最後に送った勾配（難易度適用後） */
+  /** トレーナーに最後に送った勾配（難易度・トレーナーの重量補正の適用後） */
   trainerGrade: number | null
   /** トレーナーが報告する速度（診断用。走行の計算には使わない） */
   trainerSpeedMps: number | null
@@ -50,6 +51,11 @@ export interface RideEngineOptions {
   settings: RiderSettings
   /** 走り始めるルート上の距離（#5）。既定は始点 */
   startDistanceM?: number
+  /**
+   * 実際の総重量 ÷ トレーナーが想定している総重量（#7）。トレーナーに送る勾配と Crr をこの比で縮める。
+   * 速度の計算（物理モデル）には影響しない。既定は 1（補正なし）
+   */
+  trainerMassRatio?: number
   /** 走行ループの間隔 [ms]（4 Hz） */
   tickMs?: number
   /** これより古いパワーは 0 とみなす [ms] */
@@ -72,6 +78,7 @@ export class RideEngine {
   private readonly physics: PhysicsParams
   private readonly tickMs: number
   private readonly startDistanceM: number
+  private readonly trainerMassRatio: number
   private readonly staleDataMs: number
   private readonly now: () => number
   private readonly throttle = new GradeThrottle()
@@ -103,6 +110,7 @@ export class RideEngine {
       Math.max(0, this.course.distanceM - 1),
     )
     this.progress = { ...INITIAL_PROGRESS, distanceM: this.startDistanceM }
+    this.trainerMassRatio = opts.trainerMassRatio ?? 1
     this.staleDataMs = opts.staleDataMs ?? 2000
     this.now = opts.now ?? (() => performance.now())
 
@@ -241,12 +249,14 @@ export class RideEngine {
     )
     if (force) this.throttle.reset()
     if (!this.throttle.shouldSend(grade, this.now())) return
-    this.lastSentGrade = grade
+    // トレーナーが想定している総重量との差を補正して送る（#7）
+    const sent = compensateForTrainerMass(grade, this.physics.crr, this.trainerMassRatio)
+    this.lastSentGrade = sent.grade
     this.trainer
       .setSimulation({
         windSpeedMps: 0,
-        grade,
-        crr: this.physics.crr,
+        grade: sent.grade,
+        crr: sent.crr,
         cwKgPerM: cwFromCda(this.physics.cdaM2, this.physics.airDensityKgPerM3),
       })
       .catch((e: unknown) => console.warn('勾配の送信に失敗しました', e))

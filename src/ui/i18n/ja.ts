@@ -213,6 +213,25 @@ export const ja = {
   'diagnostics.rideExport': '診断用 CSV を書き出す',
   'diagnostics.exported': 'CSV を書き出しました',
 
+  'calibration.estimate':
+    'トレーナーが想定している総重量: {trainer} kg（設定の総重量 {actual} kg。補正なしだと坂の負荷が実際の {factor} 倍）',
+  'calibration.apply': 'この値で補正する',
+  'calibration.applied': '補正を設定しました（走行中にトレーナーへ送る勾配を {ratio} 倍にします）',
+  'calibration.notEnough':
+    '想定総重量の推定には、3% 以上の勾配で 1 分以上（勾配を変えてから 20 秒以降が対象）踏んだ記録が必要です。',
+  'settings.trainer': 'トレーナーの負荷補正',
+  'settings.trainerHint':
+    'トレーナーは内部で想定している体重で坂の負荷を計算します（標準の FTMS では体重を送れません）。デバイス画面の「勾配テストの記録」で想定総重量を測り、実際の総重量（体重＋バイク重量）との差を補正します。速度の計算には影響しません。',
+  'settings.trainerMass': 'トレーナーの想定総重量',
+  'settings.trainerRatio':
+    '送る勾配の倍率: {ratio}（実際の総重量 {actual} kg ÷ 想定 {trainer} kg）',
+  'settings.trainerNone': '補正しない',
+  'settings.roadSurface': '路面',
+  'settings.roadSurface.smooth': '良い舗装（Crr 0.004）',
+  'settings.roadSurface.normal': '普通の舗装（Crr 0.005）',
+  'settings.roadSurface.rough': '荒れた舗装（Crr 0.006）',
+  'settings.roadSurface.custom': 'その他（Crr {crr}）',
+
   'error.connectFailed': '接続できませんでした: {detail}',
   'error.commandFailed': 'トレーナーへの送信に失敗しました: {detail}',
 } as const
