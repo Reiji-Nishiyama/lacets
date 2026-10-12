@@ -1,4 +1,8 @@
 import { useState } from 'react'
+import {
+  MAPTILER_FREE_MONTHLY_REQUESTS,
+  maptilerUsageThisMonth,
+} from '../../media/maptilerUsage.ts'
 import { updateMediaSettings, useSettingsStore } from '../../store/settingsStore.ts'
 import { t } from '../i18n/index.ts'
 
@@ -60,7 +64,28 @@ export function MediaSettingsPanel() {
         value={media.maptilerKey}
         onChange={(maptilerKey) => updateMediaSettings({ maptilerKey })}
       />
+      <MaptilerUsage />
       <p className="hint">{t('settings.keysLocal')}</p>
+    </div>
+  )
+}
+
+/** MapTiler の無料枠に対する、この端末の今月の使用量の目安 */
+function MaptilerUsage() {
+  const [used] = useState(() => maptilerUsageThisMonth())
+  const ratio = used / MAPTILER_FREE_MONTHLY_REQUESTS
+  return (
+    <div className="field" data-testid="maptiler-usage">
+      <p className={ratio >= 0.8 ? 'usage-high' : undefined}>
+        {t('settings.maptilerUsage', {
+          used: used.toLocaleString('ja-JP'),
+          limit: MAPTILER_FREE_MONTHLY_REQUESTS.toLocaleString('ja-JP'),
+        })}
+        {ratio >= 0.8 && (
+          <> {t('settings.maptilerUsageHigh', { percent: Math.round(ratio * 100) })}</>
+        )}
+      </p>
+      <p className="hint">{t('settings.maptilerUsageHint')}</p>
     </div>
   )
 }

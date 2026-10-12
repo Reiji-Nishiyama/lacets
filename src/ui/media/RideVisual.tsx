@@ -57,9 +57,10 @@ export function RideVisual({
     [index, preloadFrom],
   )
   const headingDeg = course.headingBetween(distanceM, distanceM + HEADING_LOOKAHEAD_M)
-  const terrainStyle = media.maptilerKey.trim()
-    ? satelliteStyleUrl(media.maptilerKey.trim())
-    : MAP_STYLE_URL
+  // MapTiler に拒否されたら（キーの誤り・無料枠の上限）、このセッションでは通常の地図に戻す
+  const [maptilerFailed, setMaptilerFailed] = useState(false)
+  const useSatellite = media.maptilerKey.trim() !== '' && !maptilerFailed
+  const terrainStyle = useSatellite ? satelliteStyleUrl(media.maptilerKey.trim()) : MAP_STYLE_URL
 
   const showImage = (mode === 'auto' || mode === 'image') && current !== null
 
@@ -84,11 +85,17 @@ export function RideVisual({
             bearingDeg={headingDeg}
             styleUrl={terrainStyle}
             className="map map-fill"
+            onMaptilerError={() => setMaptilerFailed(true)}
           />
         )}
         {showImage && current && (
           <div className="ride-visual-overlay">
             <StreetImageView image={current.image} headingDeg={headingDeg} preload={preload} />
+          </div>
+        )}
+        {maptilerFailed && (
+          <div className="ride-visual-notice" role="status">
+            {t('visual.maptilerFallback')}
           </div>
         )}
         {mode === 'image' && !current && (

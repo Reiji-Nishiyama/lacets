@@ -2,6 +2,7 @@ import type { Map as MapLibreMap, Marker } from 'maplibre-gl'
 import { useEffect, useRef, useState } from 'react'
 import type { ProfilePoint } from '../../domain/course/types.ts'
 import { t } from '../i18n/index.ts'
+import { countMaptilerRequest, isMaptilerUrl } from '../../media/maptilerUsage.ts'
 import { MAP_STYLE_URL, TERRAIN_ATTRIBUTION, TERRAIN_MAX_ZOOM, TERRAIN_TILES } from './mapConfig.ts'
 
 /** 走行中に現在地を追うときのズーム（2D / 3D） */
@@ -34,6 +35,7 @@ export function RouteMap({
   bearingDeg,
   styleUrl = MAP_STYLE_URL,
   className = 'map',
+  onMaptilerError,
 }: {
   profile: readonly ProfilePoint[]
   position?: MapPosition
@@ -45,6 +47,8 @@ export function RouteMap({
   bearingDeg?: number
   styleUrl?: string
   className?: string
+  /** MapTiler がキーの誤り・利用上限で拒否したとき（呼び出し側で通常の地図に戻す） */
+  onMaptilerError?: (status: number) => void
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
@@ -52,6 +56,11 @@ export function RouteMap({
   const ghostMarkerRef = useRef<Marker | null>(null)
   const followStartedRef = useRef(false)
   const [unavailable, setUnavailable] = useState(false)
+  const onMaptilerErrorRef = useRef(onMaptilerError)
+  useEffect(() => {
+    onMaptilerErrorRef.current = onMaptilerError
+  }, [onMaptilerError])
+  const usesMaptiler = isMaptilerUrl(styleUrl)
 
   useEffect(() => {
     let cancelled = false
@@ -76,6 +85,11 @@ export function RouteMap({
           fitBoundsOptions: { padding: 40 },
           attributionControl: { compact: true },
           maxPitch: 75,
+          // MapTiler の無料プランの使用量の目安を数える（docs/04）
+          transformRequest: (url) => {
+            countMaptilerRequest(url)
+            return { url }
+          },
         })
         map = m
         m.on('load', () => {
@@ -96,7 +110,13 @@ export function RouteMap({
             paint: { 'line-color': '#e8590c', 'line-width': terrain ? 6 : 4 },
           })
         })
-        m.on('error', (e) => console.warn('地図のエラー', e.error))
+        m.on('error', (e) => {
+          console.warn('地図のエラー', e.error)
+          const err = e.error as { status?: number; url?: string } | undefined
+          if (err?.url && isMaptilerUrl(err.url) && [401, 403, 429].includes(err.status ?? 0)) {
+            onMaptilerErrorRef.current?.(err.status ?? 0)
+          }
+        })
         markerRef.current = new maplibregl.Marker({ color: '#1c7ed6' })
         ghostMarkerRef.current = new maplibregl.Marker({ color: '#868e96', scale: 0.8 })
         mapRef.current = m
@@ -153,11 +173,25 @@ export function RouteMap({
     return <div className={`${className} map-unavailable`}>{t('map.unavailable')}</div>
   }
   return (
-    <div
-      className={className}
-      ref={containerRef}
-      data-testid={terrain ? 'terrain-view' : undefined}
-    />
+    <div className={className} data-testid={terrain ? 'terrain-view' : undefined}>
+      <div className="map-canvas" ref={containerRef} />
+      {usesMaptiler && <MaptilerLogo />}
+    </div>
+  )
+}
+
+/** MapTiler の無料プランでは、地図の左下に maptiler.com へのリンク付きロゴの表示が必要 */
+function MaptilerLogo() {
+  return (
+    <a
+      className="maptiler-logo"
+      href="https://www.maptiler.com"
+      target="_blank"
+      rel="noopener"
+      data-testid="maptiler-logo"
+    >
+      <img src="https://api.maptiler.com/resources/logo.svg" alt="MapTiler" />
+    </a>
   )
 }
 

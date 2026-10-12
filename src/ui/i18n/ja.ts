@@ -185,6 +185,12 @@ export const ja = {
     'Mapillary の開発者ページでアプリを登録し、クライアントトークン（MLY|… で始まる）を入力します。',
   'settings.maptilerKey': 'MapTiler の API キー',
   'settings.maptilerHint': '入力すると 3D 地形ビューに衛星画像を使います（なければ通常の地図）。',
+  'settings.maptilerUsage': 'この端末の今月の使用量（目安）: {used} / {limit} リクエスト',
+  'settings.maptilerUsageHint':
+    '無料プランは月 10 万リクエストまでで、超えると翌月まで止まります（課金はされません）。衛星画像は 1 タイル 4 リクエストと数えられ、1 時間の走行で数千になることがあります。キーは各自で取得してください。ブラウザのキャッシュから読んだ分も数えるので、実際より多めに出ます。',
+  'settings.maptilerUsageHigh': '今月の目安が無料枠の {percent}% に達しています。',
+  'visual.maptilerFallback':
+    'MapTiler の衛星画像を使えませんでした（キーの誤りか、今月の無料枠の上限）。通常の地図に切り替えました。',
   'settings.keysLocal':
     'トークンやキーはこの端末の中にだけ保存し、Lacets のサーバーには送りません。',
   'settings.show': '表示',
