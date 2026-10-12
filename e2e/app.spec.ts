@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures.ts'
 
 test('トップ画面が表示される', async ({ page }) => {
   await page.goto('/')

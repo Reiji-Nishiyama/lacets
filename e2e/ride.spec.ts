@@ -1,5 +1,5 @@
 import { Decoder, Stream } from '@garmin/fitsdk'
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures.ts'
 import { readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 

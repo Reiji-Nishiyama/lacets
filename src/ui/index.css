@@ -530,3 +530,131 @@ button:disabled {
 .report-table td:first-child {
   text-align: left;
 }
+
+/* 走行中のビジュアル（路上画像・3D 地形・地図） */
+.ride-visual {
+  margin-bottom: 1rem;
+}
+
+.ride-visual-stage {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  max-height: 60vh;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--panel);
+}
+
+/* MapLibre の CSS（.maplibregl-map { position: relative }）が後から読み込まれるので詳細度を上げる */
+.ride-visual-stage > .map-fill {
+  position: absolute;
+  inset: 0;
+  height: auto;
+  margin: 0;
+  border-radius: 0;
+}
+
+.ride-visual-overlay,
+.ride-visual-message {
+  position: absolute;
+  inset: 0;
+}
+
+.ride-visual-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: var(--text);
+  text-shadow: 0 1px 3px rgb(0 0 0 / 80%);
+}
+
+.visual-tabs {
+  margin-top: 0.25rem;
+}
+
+.street-image {
+  position: absolute;
+  inset: 0;
+  background: #000;
+}
+
+.street-image-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.street-image-pano {
+  background-repeat: repeat-x;
+}
+
+.street-image-layer.fade-in {
+  animation: street-fade 400ms ease-out;
+}
+
+@keyframes street-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.street-image-credit {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.5rem;
+  max-width: calc(100% - 1rem);
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  background: rgb(0 0 0 / 55%);
+  color: #fff;
+  font-size: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.street-coverage h3 {
+  margin: 0 0 0.5rem;
+}
+
+.street-coverage,
+.ghost-picker {
+  margin-top: 1rem;
+}
+
+.field-stacked label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.field-stacked input {
+  font: inherit;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  min-width: min(100%, 20rem);
+}
+
+.field-stacked .hint {
+  margin-top: 0.25rem;
+}
+
+.settings h3 {
+  margin: 0 0 0.5rem;
+}
+
+.settings + .settings {
+  margin-top: 1rem;
+}

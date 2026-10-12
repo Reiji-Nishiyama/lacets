@@ -1,6 +1,7 @@
 import { CDA_PRESETS_M2, type PositionPreset } from '../../domain/rider.ts'
 import { updateRiderSettings, useSettingsStore } from '../../store/settingsStore.ts'
 import { t } from '../i18n/index.ts'
+import { MediaSettingsPanel } from './MediaSettingsPanel.tsx'
 
 const POSITIONS = Object.keys(CDA_PRESETS_M2) as PositionPreset[]
 
@@ -94,6 +95,7 @@ export function SettingsPage() {
         </label>
         <p className="hint">{t('settings.difficultyHint')}</p>
       </div>
+      <MediaSettingsPanel />
     </section>
   )
 }

@@ -34,6 +34,12 @@ describe('Course', () => {
     expect(course.positionAt(22).headingDeg).toBeCloseTo(90, 0)
   })
 
+  it('2 地点間の方位（終点を越えたら最後の区間の方位）', () => {
+    expect(course.headingBetween(0, 20)).toBeCloseTo(0)
+    expect(course.headingBetween(15, 25)).toBeGreaterThan(30)
+    expect(course.headingBetween(25, 100)).toBeCloseTo(90, 0)
+  })
+
   it('2 点未満はエラー', () => {
     expect(() => new Course([profile[0]!])).toThrow()
   })

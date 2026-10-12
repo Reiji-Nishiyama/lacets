@@ -156,6 +156,40 @@ export const ja = {
   'history.empty': 'まだ走行記録がありません',
   'history.notFound': '走行記録が見つかりません',
 
+  'visual.mode.auto': '自動',
+  'visual.mode.image': '路上画像',
+  'visual.mode.terrain': '3D 地形',
+  'visual.mode.map': '地図',
+  'visual.noImageHere': 'この地点の路上画像はありません',
+  'visual.credit': '© {creator} / {provider}（{license}）',
+  'visual.creditNoCreator': '© {provider}（{license}）',
+  'visual.provider.panoramax': 'Panoramax',
+  'visual.provider.mapillary': 'Mapillary',
+
+  'streetImages.heading': '路上画像',
+  'streetImages.loading': 'ルート沿いの路上画像を探しています…',
+  'streetImages.coverage':
+    'ルートの {coverage}% で路上画像を表示できます（{counts}）。画像のない区間は 3D 地形ビューになります。',
+  'streetImages.none':
+    'ルート沿いの路上画像は見つかりませんでした。走行中は 3D 地形ビューを表示します。',
+  'streetImages.disabled': '路上画像は使わない設定です（設定画面で変更できます）。',
+  'streetImages.count': '{provider} {count} 枚',
+  'streetImages.error.auth':
+    '{provider}: アクセストークンが正しくありません（設定画面で確認してください）',
+  'streetImages.error.network': '{provider}: {message}',
+
+  'settings.media': '地図・路上画像',
+  'settings.panoramax': 'Panoramax の路上画像を使う（キー不要）',
+  'settings.mapillaryToken': 'Mapillary のアクセストークン',
+  'settings.mapillaryHint':
+    'Mapillary の開発者ページでアプリを登録し、クライアントトークン（MLY|… で始まる）を入力します。',
+  'settings.maptilerKey': 'MapTiler の API キー',
+  'settings.maptilerHint': '入力すると 3D 地形ビューに衛星画像を使います（なければ通常の地図）。',
+  'settings.keysLocal':
+    'トークンやキーはこの端末の中にだけ保存し、Lacets のサーバーには送りません。',
+  'settings.show': '表示',
+  'settings.hide': '隠す',
+
   'error.connectFailed': '接続できませんでした: {detail}',
   'error.commandFailed': 'トレーナーへの送信に失敗しました: {detail}',
 } as const

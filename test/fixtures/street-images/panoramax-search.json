@@ -1,0 +1,41 @@
+{
+  "_comment": "自作フィクスチャ: Panoramax /api/search（STAC ItemCollection）の形を模したもの",
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "pano-1",
+      "geometry": { "type": "Point", "coordinates": [6.0, 45.001] },
+      "properties": {
+        "datetime": "2024-07-01T10:00:00+00:00",
+        "license": "CC-BY-SA-4.0",
+        "view:azimuth": 10,
+        "geovisio:producer": "fallback-name",
+        "pers:interior_orientation": { "field_of_view": 360 }
+      },
+      "providers": [{ "name": "Rider A", "roles": ["producer"] }],
+      "assets": {
+        "hd": { "href": "https://example.org/pano-1/hd.jpg" },
+        "sd": { "href": "https://example.org/pano-1/sd.jpg" },
+        "thumb": { "href": "https://example.org/pano-1/thumb.jpg" }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "flat-1",
+      "geometry": { "type": "Point", "coordinates": [6.0, 45.002] },
+      "properties": {
+        "datetime": "2023-05-01T08:00:00Z",
+        "license": "etalab-2.0",
+        "view:azimuth": 355,
+        "geovisio:producer": "Rider B",
+        "pers:interior_orientation": { "field_of_view": 70 }
+      },
+      "assets": {
+        "hd": { "href": "https://example.org/flat-1/hd.jpg" },
+        "thumb": { "href": "https://example.org/flat-1/thumb.jpg" }
+      }
+    },
+    { "type": "Feature", "id": "broken", "geometry": null, "properties": {}, "assets": {} }
+  ]
+}
