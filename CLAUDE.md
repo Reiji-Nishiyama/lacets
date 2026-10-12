@@ -62,12 +62,14 @@ src/
   platform/        # ファイル保存・Wake Lock 等の環境差吸収
   integrations/    # strava, mapillary, panoramax, google-sv
   media/           # 映像同期、画像シーケンス表示
+  ride/            # RideEngine（走行ループ。純粋な計算は domain/ride）
   recording/       # 走行記録、FIT エクスポート
   store/           # Zustand ストア
   ui/              # React コンポーネント
 worker/            # Cloudflare Worker（Strava OAuth）
 ios/               # Capacitor 生成物（M8 で追加）
 test/fixtures/     # 自作 GPX/FIT（Strava API 由来のデータは置かない）
+scripts/           # フィクスチャ生成などの補助スクリプト
 docs/
 ```
 

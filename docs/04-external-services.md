@@ -40,3 +40,4 @@
 
 ## 地図タイル
 - OSM 公式タイルサーバーは大量利用不可。MapTiler / Stadia Maps 等の無料枠、または Protomaps のセルフホストを検討
+- **暫定**: 2D 地図は登録・API キー不要の OpenFreeMap（`https://tiles.openfreemap.org/styles/liberty`）を使用。`VITE_MAP_STYLE_URL` で差し替え可能（`src/ui/common/mapConfig.ts`）。OSM のクレジットはスタイルの attribution で表示される。M5 の 3D 地形ビュー（地形・衛星タイル）は別途選定（Q3）

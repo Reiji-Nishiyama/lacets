@@ -27,6 +27,10 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    // MapLibre（約 1 MB）は地図を表示するときだけ動的に読み込むため、警告のしきい値を上げる
+    chunkSizeWarningLimit: 1200,
+  },
   test: {
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'test/**/*.test.ts'],
     environment: 'node',
