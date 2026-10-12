@@ -2,29 +2,35 @@ import { create } from 'zustand'
 import { Course } from '../domain/course/Course.ts'
 import type { RiderSettings } from '../domain/rider.ts'
 import type { Devices } from '../devices/createDevices.ts'
+import { saveFile, type SaveResult } from '../platform/fileSave.ts'
 import { keepScreenOn, type WakeLockHandle } from '../platform/wakeLock.ts'
+import { RideRecorder } from '../recording/RideRecorder.ts'
+import type { RecordedRide } from '../recording/types.ts'
 import { RideEngine, type RideSnapshot } from '../ride/RideEngine.ts'
 import type { StoredRoute } from './db.ts'
+import { saveRide } from './rideRepository.ts'
 
-export interface RideSummary {
-  elapsedS: number
-  distanceM: number
-  averagePowerW: number
-}
+/** 走行記録の端末内保存の状態 */
+export type RideSaveState = 'idle' | 'saving' | 'saved' | 'failed'
 
 interface RideState {
   route: StoredRoute | null
   course: Course | null
   snapshot: RideSnapshot | null
-  summary: RideSummary | null
+  /** 終了後の走行記録。一度も走らずに終えた場合は null のまま */
+  recordedRide: RecordedRide | null
+  saveState: RideSaveState
 }
 
-export const useRideStore = create<RideState>(() => ({
+const initialState: RideState = {
   route: null,
   course: null,
   snapshot: null,
-  summary: null,
-}))
+  recordedRide: null,
+  saveState: 'idle',
+}
+
+export const useRideStore = create<RideState>(() => initialState)
 
 let engine: RideEngine | null = null
 let wakeLock: WakeLockHandle | null = null
@@ -39,6 +45,17 @@ function cleanup() {
   wakeLock = null
 }
 
+async function persist(ride: RecordedRide) {
+  useRideStore.setState({ recordedRide: ride, saveState: 'saving' })
+  try {
+    await saveRide(ride)
+    useRideStore.setState({ saveState: 'saved' })
+  } catch (e) {
+    console.error('走行記録を保存できませんでした', e)
+    useRideStore.setState({ saveState: 'failed' })
+  }
+}
+
 export const rideActions = {
   start(route: StoredRoute, devices: Devices, settings: RiderSettings) {
     cleanup()
@@ -51,31 +68,24 @@ export const rideActions = {
       settings,
     })
     engine = e
-    // 平均パワーは記録ティック（約 1 秒ごと）の仕事量から求める
-    let workJ = 0
-    let timeS = 0
+    // レコーダーは先に購読させ、終了の状態変化を記録し終えてから下で締める
+    const recorder = new RideRecorder(e, {
+      id: crypto.randomUUID(),
+      routeId: route.id,
+      routeName: route.name,
+      settings,
+    })
     unsubs.push(
-      e.onRecordTick(({ snapshot, dtS }) => {
-        workJ += snapshot.powerW * dtS
-        timeS += dtS
-      }),
       e.onSnapshot((snapshot) => {
-        const summary: RideSummary | null =
-          snapshot.status === 'finished'
-            ? {
-                elapsedS: snapshot.elapsedS,
-                distanceM: snapshot.distanceM,
-                averagePowerW: timeS > 0 ? workJ / timeS : 0,
-              }
-            : null
-        useRideStore.setState({ snapshot, summary })
-        if (snapshot.status === 'finished') {
-          wakeLock?.release()
-          wakeLock = null
-        }
+        useRideStore.setState({ snapshot })
+        if (snapshot.status !== 'finished') return
+        wakeLock?.release()
+        wakeLock = null
+        const ride = recorder.finish()
+        if (ride) void persist(ride)
       }),
     )
-    useRideStore.setState({ route, course, snapshot: e.snapshot, summary: null })
+    useRideStore.setState({ ...initialState, route, course, snapshot: e.snapshot })
     wakeLock = keepScreenOn()
     e.start()
   },
@@ -84,6 +94,15 @@ export const rideActions = {
   finish: () => engine?.finish(),
   exit() {
     cleanup()
-    useRideStore.setState({ route: null, course: null, snapshot: null, summary: null })
+    useRideStore.setState(initialState)
+  },
+  /** 走行記録を FIT ファイルとして書き出す（F4-2） */
+  async exportFit(): Promise<SaveResult | null> {
+    const ride = useRideStore.getState().recordedRide
+    if (!ride) return null
+    // FIT SDK は大きいので書き出すときだけ読み込む
+    const { encodeRideFit, rideFitFileName } = await import('../recording/fitExport.ts')
+    const bytes = encodeRideFit(ride, -new Date(ride.startedAtMs).getTimezoneOffset())
+    return saveFile(rideFitFileName(ride), bytes, 'application/vnd.ant.fit', 'FIT')
   },
 }
