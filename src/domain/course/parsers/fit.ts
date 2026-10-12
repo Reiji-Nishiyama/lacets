@@ -1,11 +1,28 @@
 import { Decoder, Stream } from '@garmin/fitsdk'
-import type { ParsedRoute } from '../types.ts'
+import type { ParsedRoute, RecordingDevice, SensorValues } from '../types.ts'
 import { RouteParseError } from './RouteParseError.ts'
 import { toElapsed } from './time.ts'
 
 const SEMICIRCLE_TO_DEG = 180 / 2 ** 31
 /** FIT の File 型: course = 6, activity = 4 */
 const FILE_COURSE = 6
+/** FIT の Manufacturer: garmin = 1, wahoo_fitness = 32 */
+const MANUFACTURER_GARMIN = 1
+const MANUFACTURER_WAHOO = 32
+
+function deviceOf(manufacturer: unknown): RecordingDevice {
+  if (manufacturer === 'garmin' || manufacturer === MANUFACTURER_GARMIN) return 'garmin'
+  if (manufacturer === 'wahooFitness' || manufacturer === MANUFACTURER_WAHOO) return 'wahoo'
+  return 'other'
+}
+
+function sensors(r: { power?: number; heartRate?: number; cadence?: number }): SensorValues {
+  return {
+    ...(typeof r.power === 'number' ? { powerW: r.power } : {}),
+    ...(typeof r.heartRate === 'number' ? { heartRateBpm: r.heartRate } : {}),
+    ...(typeof r.cadence === 'number' ? { cadenceRpm: r.cadence } : {}),
+  }
+}
 
 /**
  * FIT のコース（Garmin Connect 等）と実走（Wahoo ELEMNT / Garmin Edge）。record メッセージの位置と標高を読む。
@@ -19,7 +36,8 @@ export function parseFit(bytes: Uint8Array): ParsedRoute {
     throw new RouteParseError('invalidFile', `FIT を読めませんでした: ${errors[0]?.message ?? ''}`)
   }
 
-  const fileType = messages.fileIdMesgs?.[0]?.type as string | number | undefined
+  const fileId = messages.fileIdMesgs?.[0]
+  const fileType = fileId?.type as string | number | undefined
   const isCourse = fileType === 'course' || fileType === FILE_COURSE
 
   const withTime = (messages.recordMesgs ?? []).flatMap((r) => {
@@ -32,6 +50,7 @@ export function parseFit(bytes: Uint8Array): ParsedRoute {
         lon: r.positionLong * SEMICIRCLE_TO_DEG,
         elevationM: typeof altitude === 'number' ? altitude : undefined,
         timeMs: isCourse ? undefined : ts instanceof Date ? ts.getTime() : undefined,
+        ...(isCourse ? {} : sensors(r)),
       },
     ]
   })
@@ -45,5 +64,6 @@ export function parseFit(bytes: Uint8Array): ParsedRoute {
     points,
     elevationSource: isCourse ? 'dem' : 'barometric',
     startedAtMs,
+    ...(isCourse ? {} : { device: deviceOf(fileId?.manufacturer) }),
   }
 }

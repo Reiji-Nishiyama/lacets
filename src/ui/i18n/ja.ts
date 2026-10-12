@@ -59,6 +59,7 @@ export const ja = {
   'routes.error.unsupportedFormat': '{file}: GPX / TCX / FIT のいずれでもありません',
   'routes.error.invalidFile': '{file}: ファイルを読み込めませんでした',
   'routes.error.noPoints': '{file}: 位置情報がありません',
+  'routes.error.notRecorded': '{file}: 時刻のないファイル（ルート）は実走データとして使えません',
   'routes.error.unknown': '{file}: 取り込みに失敗しました（{detail}）',
 
   'stats.distance': '距離',
