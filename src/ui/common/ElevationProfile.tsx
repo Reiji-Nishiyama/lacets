@@ -22,9 +22,12 @@ interface Column {
 export function ElevationProfile({
   profile,
   markerDistanceM,
+  ghostDistanceM,
 }: {
   profile: readonly ProfilePoint[]
   markerDistanceM?: number
+  /** ゴーストの位置（点線で表示） */
+  ghostDistanceM?: number
 }) {
   const { columns, minE, maxE, totalM } = useMemo(() => buildColumns(profile), [profile])
   const plotW = WIDTH - PAD.left - PAD.right
@@ -54,6 +57,17 @@ export function ElevationProfile({
             fill={gradeColor(run[0]!.grade)}
           />
         ))}
+        {ghostDistanceM !== undefined && (
+          <line
+            className="profile-ghost-marker"
+            data-testid="profile-ghost-marker"
+            vectorEffect="non-scaling-stroke"
+            x1={x(ghostDistanceM)}
+            x2={x(ghostDistanceM)}
+            y1={PAD.top}
+            y2={baseY}
+          />
+        )}
         {markerDistanceM !== undefined && (
           <line
             className="profile-marker"

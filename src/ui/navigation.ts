@@ -4,6 +4,8 @@ export type Screen =
   | { name: 'routes' }
   | { name: 'preview'; routeId: string }
   | { name: 'ride' }
+  | { name: 'history' }
+  | { name: 'rideDetail'; rideId: string }
   | { name: 'devices' }
   | { name: 'settings' }
 

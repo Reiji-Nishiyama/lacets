@@ -1,5 +1,8 @@
 import { useLiveQuery } from 'dexie-react-hooks'
+import { useState } from 'react'
+import type { GhostRef } from '../../recording/types.ts'
 import { deviceActions, useDeviceStore } from '../../store/deviceStore.ts'
+import { loadGhost } from '../../store/ghosts.ts'
 import { rideActions } from '../../store/rideStore.ts'
 import { getRoute } from '../../store/routeRepository.ts'
 import { useSettingsStore } from '../../store/settingsStore.ts'
@@ -9,6 +12,7 @@ import { Stat } from '../common/Stat.tsx'
 import { formatGradePct, formatKm, formatMeters } from '../format.ts'
 import { t } from '../i18n/index.ts'
 import { useNavigation } from '../navigation.ts'
+import { GhostPicker } from './GhostPicker.tsx'
 
 /** 走行前の確認（地図・勾配プロファイル・統計） */
 export function RoutePreviewPage({ routeId }: { routeId: string }) {
@@ -18,13 +22,29 @@ export function RoutePreviewPage({ routeId }: { routeId: string }) {
   const devices = useDeviceStore((s) => s.devices)
   const trainerState = useDeviceStore((s) => s.trainerState)
   const rider = useSettingsStore((s) => s.rider)
+  // undefined = 未選択（ルートに紐付いた実走データがあればそれを既定にする）
+  const [ghostRef, setGhostRef] = useState<GhostRef | null | undefined>(undefined)
+  const [starting, setStarting] = useState(false)
 
   if (route === undefined) return null
   if (route === null) return <p className="notice notice-error">{t('preview.notFound')}</p>
 
-  const start = () => {
-    rideActions.start(route, devices, rider)
-    navigate({ name: 'ride' })
+  const effectiveGhost =
+    ghostRef !== undefined
+      ? ghostRef
+      : route.referenceRideId
+        ? { kind: 'reference' as const, id: route.referenceRideId }
+        : null
+
+  const start = async () => {
+    setStarting(true)
+    try {
+      const ghost = effectiveGhost ? await loadGhost(effectiveGhost, route) : null
+      rideActions.start(route, devices, rider, ghost)
+      navigate({ name: 'ride' })
+    } finally {
+      setStarting(false)
+    }
   }
 
   return (
@@ -73,9 +93,15 @@ export function RoutePreviewPage({ routeId }: { routeId: string }) {
       )}
       <RouteMap profile={route.profile} />
       <ElevationProfile profile={route.profile} />
+      <GhostPicker route={route} value={effectiveGhost} onChange={setGhostRef} />
       <div className="actions">
         {trainerState === 'connected' ? (
-          <button type="button" className="button-primary" onClick={start}>
+          <button
+            type="button"
+            className="button-primary"
+            disabled={starting}
+            onClick={() => void start()}
+          >
             {t('preview.start')}
           </button>
         ) : (

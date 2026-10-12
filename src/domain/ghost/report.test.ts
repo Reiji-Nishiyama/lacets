@@ -48,4 +48,31 @@ describe('compareSegments', () => {
     expect(rows[0]!.segment.averageGrade).toBe(0.06)
     expect(rows[0]!.user?.timeS).toBe(300)
   })
+
+  it('ゴーストがスタートの少し先から始まる場合は、重なる範囲で比べる', () => {
+    const user = track(5, 250)
+    // 15 m 地点から始まるゴースト（スタート前の待機を除いた実走）
+    const ghost = TimedTrack.fromSamples(
+      Array.from({ length: 700 }, (_, t) => ({
+        distanceM: Math.min(2500, 15 + t * 4),
+        timeS: t,
+        powerW: 220,
+      })),
+      0,
+    )
+    const rows = compareSegments(kilometerSegments(2500), user, ghost, 60)
+    // 15〜1000 m: 自分 197 秒、ゴースト 246.25 秒
+    expect(rows[0]!.user?.timeS).toBeCloseTo(197)
+    expect(rows[0]!.ghost?.timeS).toBeCloseTo(246.25)
+    expect(rows[0]!.deltaS).toBeCloseTo(-49.25)
+    // 範囲が 100 m 以上ずれる区間は比べない
+    const far = TimedTrack.fromSamples([
+      { distanceM: 500, timeS: 0 },
+      { distanceM: 2500, timeS: 500 },
+    ])
+    const farRows = compareSegments(kilometerSegments(2500), user, far, 60)
+    expect(farRows[0]!.ghost).toBeNull()
+    expect(farRows[0]!.user?.timeS).toBe(200)
+    expect(farRows[1]!.ghost?.timeS).toBe(250)
+  })
 })
