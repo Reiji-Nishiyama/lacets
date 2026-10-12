@@ -42,6 +42,17 @@ export class Course {
     }
   }
 
+  /**
+   * fromM から toM への方位 [deg]。10 m ごとの区間の方位は細かく揺れるので、
+   * カメラの向きなどには少し先までの方位を使う
+   */
+  headingBetween(fromM: number, toM: number): number {
+    const a = this.positionAt(fromM)
+    const b = this.positionAt(Math.max(toM, fromM + 1))
+    if (a.lat === b.lat && a.lon === b.lon) return a.headingDeg
+    return bearingDeg(a.lat, a.lon, b.lat, b.lon)
+  }
+
   /** distanceM を含む区間 [a, b] と区間内の位置 t（0〜1） */
   private segment(distanceM: number): { a: ProfilePoint; b: ProfilePoint; t: number } {
     const p = this.profile

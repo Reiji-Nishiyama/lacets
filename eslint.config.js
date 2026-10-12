@@ -21,7 +21,10 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', ignoreRestSiblings: true },
+      ],
     },
   },
   {
@@ -42,6 +45,8 @@ export default tseslint.config(
   {
     files: ['*.config.ts', 'e2e/**/*.ts'],
     languageOptions: { globals: globals.node },
+    // Playwright のフィクスチャの use() を React のフックと誤認するため
+    rules: { 'react-hooks/rules-of-hooks': 'off' },
   },
   prettier,
 )

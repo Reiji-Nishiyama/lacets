@@ -12,6 +12,7 @@ import { Stat } from '../common/Stat.tsx'
 import { formatGradePct, formatKm, formatMeters } from '../format.ts'
 import { t } from '../i18n/index.ts'
 import { useNavigation } from '../navigation.ts'
+import { StreetImageCoverage } from '../media/StreetImageCoverage.tsx'
 import { GhostPicker } from './GhostPicker.tsx'
 
 /** 走行前の確認（地図・勾配プロファイル・統計） */
@@ -93,6 +94,7 @@ export function RoutePreviewPage({ routeId }: { routeId: string }) {
       )}
       <RouteMap profile={route.profile} />
       <ElevationProfile profile={route.profile} />
+      <StreetImageCoverage route={route} />
       <GhostPicker route={route} value={effectiveGhost} onChange={setGhostRef} />
       <div className="actions">
         {trainerState === 'connected' ? (

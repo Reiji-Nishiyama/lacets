@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures.ts'
 
 test.describe('デバイス接続（シミュレータ）', () => {
   test.beforeEach(async ({ page }) => {

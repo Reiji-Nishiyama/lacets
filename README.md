@@ -18,6 +18,8 @@ npm run typecheck
 npm run format       # Prettier で整形
 ```
 
+E2E では WebGL を無効にしている（GPU のない環境で地図の描画がページを固めるほど重いため）。地図・3D 地形の見た目は実機で確認する。外部の路上画像 API は `e2e/fixtures.ts` でモックしている。
+
 E2E の初回は `npx playwright install chromium` でブラウザを入れる。
 Linux / WSL で共有ライブラリ不足（`libgbm.so.1` 等）のエラーが出る場合は `sudo npx playwright install-deps chromium` を実行する。
 
@@ -26,6 +28,8 @@ Linux / WSL で共有ライブラリ不足（`libgbm.so.1` 等）のエラーが
 | 変数                 | 内容                                                |
 | -------------------- | --------------------------------------------------- |
 | `VITE_MAP_STYLE_URL` | MapLibre の地図スタイル URL。未指定なら OpenFreeMap |
+
+Mapillary のトークンと MapTiler のキーは、各自がアプリの設定画面で入力する（端末内にのみ保存）。
 
 ### テスト用ルート
 

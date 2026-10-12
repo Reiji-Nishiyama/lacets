@@ -1,10 +1,10 @@
 import { formatDuration } from '../../domain/units.ts'
 import { rideActions, useRideStore } from '../../store/rideStore.ts'
 import { ElevationProfile } from '../common/ElevationProfile.tsx'
-import { RouteMap } from '../common/RouteMap.tsx'
 import { Stat } from '../common/Stat.tsx'
 import { formatDelta, formatGradePct, formatInt, formatKm, formatKmh } from '../format.ts'
 import { t } from '../i18n/index.ts'
+import { RideVisual } from '../media/RideVisual.tsx'
 import { useNavigation } from '../navigation.ts'
 import { RideSummaryPanel } from './RideSummaryPanel.tsx'
 
@@ -35,6 +35,16 @@ export function RidePage() {
           {t(`ride.status.${status}`)}
         </span>
       </div>
+
+      {course && (
+        <RideVisual
+          route={route}
+          course={course}
+          distanceM={snapshot.distanceM}
+          position={position}
+          ghostPosition={ghostPosition}
+        />
+      )}
 
       <div className="ride-metrics">
         {ghost && (
@@ -127,7 +137,6 @@ export function RidePage() {
         markerDistanceM={snapshot.distanceM}
         ghostDistanceM={ghostState?.ghostDistanceM}
       />
-      <RouteMap profile={route.profile} position={position} ghostPosition={ghostPosition} follow />
     </section>
   )
 }

@@ -1,0 +1,25 @@
+{
+  "_comment": "自作フィクスチャ: Mapillary API v4 /images の形を模したもの",
+  "data": [
+    {
+      "id": "1001",
+      "computed_geometry": { "type": "Point", "coordinates": [6.0, 45.003] },
+      "geometry": { "type": "Point", "coordinates": [6.00001, 45.00301] },
+      "computed_compass_angle": 3.5,
+      "compass_angle": 10,
+      "captured_at": 1690000000000,
+      "thumb_1024_url": "https://example.org/m/1001-1024.jpg",
+      "thumb_2048_url": "https://example.org/m/1001-2048.jpg",
+      "creator": { "id": "9", "username": "mapper" },
+      "is_pano": false
+    },
+    {
+      "id": "1002",
+      "geometry": { "type": "Point", "coordinates": [6.0, 45.004] },
+      "compass_angle": 180,
+      "thumb_1024_url": "https://example.org/m/1002-1024.jpg",
+      "is_pano": true
+    },
+    { "id": "1003" }
+  ]
+}

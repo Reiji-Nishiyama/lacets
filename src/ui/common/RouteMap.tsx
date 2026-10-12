@@ -2,10 +2,15 @@ import type { Map as MapLibreMap, Marker } from 'maplibre-gl'
 import { useEffect, useRef, useState } from 'react'
 import type { ProfilePoint } from '../../domain/course/types.ts'
 import { t } from '../i18n/index.ts'
-import { MAP_STYLE_URL } from './mapConfig.ts'
+import { countMaptilerRequest, isMaptilerUrl } from '../../media/maptilerUsage.ts'
+import { MAP_STYLE_URL, TERRAIN_ATTRIBUTION, TERRAIN_MAX_ZOOM, TERRAIN_TILES } from './mapConfig.ts'
 
-/** 走行中に現在地を追うときのズーム */
+/** 走行中に現在地を追うときのズーム（2D / 3D） */
 const FOLLOW_ZOOM = 15
+const TERRAIN_FOLLOW_ZOOM = 15.5
+/** 3D 地形ビューのカメラの傾き [deg] と、地形の高さの強調 */
+const TERRAIN_PITCH = 62
+const TERRAIN_EXAGGERATION = 1.3
 
 /** 地図に描く線の点数の上限 */
 const MAX_LINE_POINTS = 2000
@@ -16,7 +21,9 @@ export interface MapPosition {
 }
 
 /**
- * ルートの線と現在位置を表示する 2D 地図。MapLibre は重いので動的に読み込む。
+ * ルートの線と現在位置を表示する地図。MapLibre は重いので動的に読み込む。
+ * terrain なら 3D 地形ビュー（docs/02 §9、F6-5）: 標高タイルで地形を立体にし、
+ * カメラは現在位置の後方上空から進行方向（bearingDeg）を向く。
  * WebGL が使えない環境では案内を表示する。
  */
 export function RouteMap({
@@ -24,12 +31,24 @@ export function RouteMap({
   position,
   ghostPosition,
   follow = false,
+  terrain = false,
+  bearingDeg,
+  styleUrl = MAP_STYLE_URL,
+  className = 'map',
+  onMaptilerError,
 }: {
   profile: readonly ProfilePoint[]
   position?: MapPosition
   /** ゴーストの位置（あれば灰色のマーカーで表示） */
   ghostPosition?: MapPosition
   follow?: boolean
+  terrain?: boolean
+  /** 3D 地形ビューでカメラを向ける方位 */
+  bearingDeg?: number
+  styleUrl?: string
+  className?: string
+  /** MapTiler がキーの誤り・利用上限で拒否したとき（呼び出し側で通常の地図に戻す） */
+  onMaptilerError?: (status: number) => void
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
@@ -37,6 +56,11 @@ export function RouteMap({
   const ghostMarkerRef = useRef<Marker | null>(null)
   const followStartedRef = useRef(false)
   const [unavailable, setUnavailable] = useState(false)
+  const onMaptilerErrorRef = useRef(onMaptilerError)
+  useEffect(() => {
+    onMaptilerErrorRef.current = onMaptilerError
+  }, [onMaptilerError])
+  const usesMaptiler = isMaptilerUrl(styleUrl)
 
   useEffect(() => {
     let cancelled = false
@@ -56,13 +80,20 @@ export function RouteMap({
         for (const c of coords) bounds.extend(c)
         const m = new maplibregl.Map({
           container: containerRef.current,
-          style: MAP_STYLE_URL,
+          style: styleUrl,
           bounds,
           fitBoundsOptions: { padding: 40 },
           attributionControl: { compact: true },
+          maxPitch: 75,
+          // MapTiler の無料プランの使用量の目安を数える（docs/04）
+          transformRequest: (url) => {
+            countMaptilerRequest(url)
+            return { url }
+          },
         })
         map = m
         m.on('load', () => {
+          if (terrain) addTerrain(m)
           m.addSource('route', {
             type: 'geojson',
             data: {
@@ -76,10 +107,16 @@ export function RouteMap({
             type: 'line',
             source: 'route',
             layout: { 'line-join': 'round', 'line-cap': 'round' },
-            paint: { 'line-color': '#e8590c', 'line-width': 4 },
+            paint: { 'line-color': '#e8590c', 'line-width': terrain ? 6 : 4 },
           })
         })
-        m.on('error', (e) => console.warn('地図のエラー', e.error))
+        m.on('error', (e) => {
+          console.warn('地図のエラー', e.error)
+          const err = e.error as { status?: number; url?: string } | undefined
+          if (err?.url && isMaptilerUrl(err.url) && [401, 403, 429].includes(err.status ?? 0)) {
+            onMaptilerErrorRef.current?.(err.status ?? 0)
+          }
+        })
         markerRef.current = new maplibregl.Marker({ color: '#1c7ed6' })
         ghostMarkerRef.current = new maplibregl.Marker({ color: '#868e96', scale: 0.8 })
         mapRef.current = m
@@ -98,7 +135,7 @@ export function RouteMap({
       mapRef.current = null
       followStartedRef.current = false
     }
-  }, [profile])
+  }, [profile, terrain, styleUrl])
 
   useEffect(() => {
     const map = mapRef.current
@@ -108,14 +145,17 @@ export function RouteMap({
     if (!marker.getElement().isConnected) marker.addTo(map)
     if (!follow) return
     const center: [number, number] = [position.lon, position.lat]
-    // 最初の追従でルート全体の表示から現在地に寄る。以降はズームを変えずに中心だけ動かす
+    const camera = terrain
+      ? { center, bearing: bearingDeg ?? map.getBearing(), pitch: TERRAIN_PITCH }
+      : { center }
+    // 最初の追従でルート全体の表示から現在地に寄る。以降はズームを変えずにカメラを動かす
     if (!followStartedRef.current) {
       followStartedRef.current = true
-      map.jumpTo({ center, zoom: FOLLOW_ZOOM })
+      map.jumpTo({ ...camera, zoom: terrain ? TERRAIN_FOLLOW_ZOOM : FOLLOW_ZOOM })
     } else {
-      map.easeTo({ center, duration: 250, easing: (x) => x })
+      map.easeTo({ ...camera, duration: 250, easing: (x) => x })
     }
-  }, [position, follow])
+  }, [position, follow, terrain, bearingDeg])
 
   useEffect(() => {
     const map = mapRef.current
@@ -129,8 +169,53 @@ export function RouteMap({
     if (!marker.getElement().isConnected) marker.addTo(map)
   }, [ghostPosition])
 
-  if (unavailable) return <div className="map map-unavailable">{t('map.unavailable')}</div>
-  return <div className="map" ref={containerRef} />
+  if (unavailable) {
+    return <div className={`${className} map-unavailable`}>{t('map.unavailable')}</div>
+  }
+  return (
+    <div className={className} data-testid={terrain ? 'terrain-view' : undefined}>
+      <div className="map-canvas" ref={containerRef} />
+      {usesMaptiler && <MaptilerLogo />}
+    </div>
+  )
+}
+
+/** MapTiler の無料プランでは、地図の左下に maptiler.com へのリンク付きロゴの表示が必要 */
+function MaptilerLogo() {
+  return (
+    <a
+      className="maptiler-logo"
+      href="https://www.maptiler.com"
+      target="_blank"
+      rel="noopener"
+      data-testid="maptiler-logo"
+    >
+      <img src="https://api.maptiler.com/resources/logo.svg" alt="MapTiler" />
+    </a>
+  )
+}
+
+/** 標高タイルで地形を立体にし、陰影を付ける（陰影には別のソースを使うのが推奨） */
+function addTerrain(m: MapLibreMap) {
+  const dem = {
+    type: 'raster-dem' as const,
+    tiles: [TERRAIN_TILES],
+    tileSize: 256,
+    maxzoom: TERRAIN_MAX_ZOOM,
+    encoding: 'terrarium' as const,
+    attribution: TERRAIN_ATTRIBUTION,
+  }
+  m.addSource('terrain-dem', dem)
+  // 出典は 1 か所に出せば足りるので、陰影用のソースには付けない
+  const { attribution, ...hillshadeDem } = dem
+  m.addSource('hillshade-dem', hillshadeDem)
+  m.addLayer({
+    id: 'hillshade',
+    type: 'hillshade',
+    source: 'hillshade-dem',
+    paint: { 'hillshade-exaggeration': 0.4 },
+  })
+  m.setTerrain({ source: 'terrain-dem', exaggeration: TERRAIN_EXAGGERATION })
 }
 
 function lineCoordinates(profile: readonly ProfilePoint[]): [number, number][] {
