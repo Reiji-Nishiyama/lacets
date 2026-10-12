@@ -16,13 +16,26 @@ export type ElevationSource = 'barometric' | 'dem'
 
 export type RouteFormat = 'gpx' | 'tcx' | 'fit'
 
+/** 実走記録に含まれるセンサー値（ゴーストの比較に使う。ルートとしては保存しない） */
+export interface SensorValues {
+  powerW?: number
+  heartRateBpm?: number
+  cadenceRpm?: number
+}
+
+export type ParsedPoint = RoutePoint & SensorValues
+
+/** 記録した機器のメーカー（FIT の file_id から判定） */
+export type RecordingDevice = 'wahoo' | 'garmin' | 'other'
+
 export interface ParsedRoute {
   format: RouteFormat
   name: string | undefined
-  points: RoutePoint[]
+  points: ParsedPoint[]
   elevationSource: ElevationSource
-  /** 最初の時刻付きの点の時刻（Unix ms） */
+  /** 最初の時刻付きの点の時刻（Unix ms）。あれば実走記録 */
   startedAtMs?: number
+  device?: RecordingDevice
 }
 
 /** 走行用に等間隔へ再サンプルした点。 */

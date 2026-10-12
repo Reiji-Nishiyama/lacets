@@ -1,7 +1,7 @@
-import type { ParsedRoute } from '../types.ts'
+import type { ParsedRoute, SensorValues } from '../types.ts'
 import { RouteParseError } from './RouteParseError.ts'
 import { parseIsoTimeMs, toElapsed } from './time.ts'
-import { child, children, num, parseXml, text } from './xml.ts'
+import { child, children, num, parseXml, text, type XmlNode } from './xml.ts'
 
 /** TCX。Courses/Course（コース）を優先し、なければ Activities/Activity（実走）を読む。 */
 export function parseTcx(xml: string): ParsedRoute {
@@ -29,6 +29,7 @@ export function parseTcx(xml: string): ParsedRoute {
           lon,
           elevationM: num(text(tp, 'AltitudeMeters')),
           timeMs: parseIsoTimeMs(text(tp, 'Time')),
+          ...tcxSensors(tp),
         },
       ]
     })
@@ -39,10 +40,26 @@ export function parseTcx(xml: string): ParsedRoute {
     return {
       format: 'tcx',
       name: text(courses[0], 'Name'),
-      points: withTime.map(({ timeMs: _t, ...p }) => p),
+      points: withTime.map(({ timeMs: _t, ...p }) => ({
+        lat: p.lat,
+        lon: p.lon,
+        elevationM: p.elevationM,
+      })),
       elevationSource: 'dem',
     }
   }
   const { points, startedAtMs } = toElapsed(withTime)
   return { format: 'tcx', name: undefined, points, elevationSource: 'barometric', startedAtMs }
+}
+
+/** HeartRateBpm/Value、Cadence、Extensions/TPX/Watts（Garmin Activity Extension v2） */
+function tcxSensors(tp: XmlNode): SensorValues {
+  const heartRateBpm = num(text(child(tp, 'HeartRateBpm'), 'Value'))
+  const cadenceRpm = num(text(tp, 'Cadence'))
+  const powerW = num(text(child(child(tp, 'Extensions'), 'TPX'), 'Watts'))
+  return {
+    ...(powerW === undefined ? {} : { powerW }),
+    ...(heartRateBpm === undefined ? {} : { heartRateBpm }),
+    ...(cadenceRpm === undefined ? {} : { cadenceRpm }),
+  }
 }

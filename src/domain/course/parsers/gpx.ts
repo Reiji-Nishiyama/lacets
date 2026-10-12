@@ -1,4 +1,4 @@
-import type { ParsedRoute } from '../types.ts'
+import type { ParsedRoute, SensorValues } from '../types.ts'
 import { RouteParseError } from './RouteParseError.ts'
 import { parseIsoTimeMs, toElapsed } from './time.ts'
 import { child, children, num, parseXml, text, type XmlNode } from './xml.ts'
@@ -24,7 +24,13 @@ export function parseGpx(xml: string): ParsedRoute {
     const lon = num(pt['@_lon'])
     if (lat === undefined || lon === undefined) return []
     return [
-      { lat, lon, elevationM: num(text(pt, 'ele')), timeMs: parseIsoTimeMs(text(pt, 'time')) },
+      {
+        lat,
+        lon,
+        elevationM: num(text(pt, 'ele')),
+        timeMs: parseIsoTimeMs(text(pt, 'time')),
+        ...gpxSensors(child(pt, 'extensions')),
+      },
     ]
   })
   if (withTime.length < 2) throw new RouteParseError('noPoints', 'GPX に位置情報がありません')
@@ -40,5 +46,22 @@ export function parseGpx(xml: string): ParsedRoute {
     points,
     elevationSource: recorded ? 'barometric' : 'dem',
     startedAtMs,
+  }
+}
+
+/**
+ * Garmin TrackPointExtension（hr, cad）と、Strava / Wahoo 等が書く power 拡張を読む。
+ * 名前空間の接頭辞は取り除いて解釈している。
+ */
+function gpxSensors(ext: XmlNode | undefined): SensorValues {
+  if (!ext) return {}
+  const tpx = child(ext, 'TrackPointExtension')
+  const powerW = num(text(ext, 'power')) ?? num(text(tpx, 'power'))
+  const heartRateBpm = num(text(tpx, 'hr'))
+  const cadenceRpm = num(text(tpx, 'cad'))
+  return {
+    ...(powerW === undefined ? {} : { powerW }),
+    ...(heartRateBpm === undefined ? {} : { heartRateBpm }),
+    ...(cadenceRpm === undefined ? {} : { cadenceRpm }),
   }
 }

@@ -1,5 +1,5 @@
-import { parseRouteFile } from './parsers/index.ts'
-import { buildProfile, type CourseProfile } from './profile.ts'
+import { importRouteFile } from '../importFile.ts'
+import type { CourseProfile } from './profile.ts'
 import type { ElevationSource, RouteFormat, RoutePoint } from './types.ts'
 
 export interface ImportedRoute extends CourseProfile {
@@ -15,13 +15,5 @@ export interface ImportedRoute extends CourseProfile {
  * 名前がファイル内になければ fallbackName（通常は拡張子を除いたファイル名）を使う。
  */
 export function importRoute(bytes: Uint8Array, fallbackName: string): ImportedRoute {
-  const parsed = parseRouteFile(bytes)
-  return {
-    name: parsed.name ?? fallbackName,
-    format: parsed.format,
-    elevationSource: parsed.elevationSource,
-    points: parsed.points,
-    startedAtMs: parsed.startedAtMs,
-    ...buildProfile(parsed.points, parsed.elevationSource),
-  }
+  return importRouteFile(bytes, fallbackName).route
 }

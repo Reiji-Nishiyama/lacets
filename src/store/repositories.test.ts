@@ -4,6 +4,7 @@ import { readFixture } from '../../test/helpers/fixtures.ts'
 import { DEFAULT_RIDER_SETTINGS } from '../domain/rider.ts'
 import { createDb, type LacetsDb } from './db.ts'
 import { sampleRide } from '../../test/helpers/recordedRide.ts'
+import { addReferenceFromFile, getReference, listReferences } from './referenceRepository.ts'
 import { getRide, listRides, saveRide } from './rideRepository.ts'
 import { addRouteFromFile, deleteRoute, getRoute, listRoutes } from './routeRepository.ts'
 import { loadRiderSettings, saveRiderSettings } from './settingsRepository.ts'
@@ -70,5 +71,32 @@ describe('rideRepository', () => {
     const loaded = await getRide('ride-1', db)
     expect(loaded?.samples).toHaveLength(90)
     expect(loaded?.stats).toEqual(a.stats)
+  })
+})
+
+describe('referenceRepository', () => {
+  it('実走記録をルートとして取り込むと、実走データも保存して紐付ける', async () => {
+    const route = await addRouteFromFile('ride.gpx', readFixture('recorded-ride.gpx'), db)
+    expect(route.referenceRideId).toBeDefined()
+    const ref = await getReference(route.referenceRideId!, db)
+    expect(ref?.samples).toHaveLength(3)
+    expect(ref?.samples[0]?.heartRateBpm).toBe(150)
+    // センサー値はルートには残さない
+    expect(route.points[0]).not.toHaveProperty('heartRateBpm')
+  })
+
+  it('時刻のないルートは実走データを作らない', async () => {
+    const route = await addRouteFromFile('r.gpx', readFixture('track-two-segments.gpx'), db)
+    expect(route.referenceRideId).toBeUndefined()
+    expect(await listReferences(db)).toEqual([])
+  })
+
+  it('実走データだけを取り込める。時刻のないファイルはエラー', async () => {
+    const ref = await addReferenceFromFile('last-year.tcx', readFixture('activity.tcx'), db)
+    expect(ref.name).toBe('last-year')
+    expect(ref.device).toBe('other')
+    await expect(
+      addReferenceFromFile('route.gpx', readFixture('track-two-segments.gpx'), db),
+    ).rejects.toMatchObject({ code: 'notRecorded' })
   })
 })

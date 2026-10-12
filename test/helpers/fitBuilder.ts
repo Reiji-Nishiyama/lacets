@@ -17,6 +17,9 @@ export interface FitPointInput {
   lon: number
   elevationM?: number
   time: Date
+  powerW?: number
+  heartRateBpm?: number
+  cadenceRpm?: number
 }
 
 /** テスト用の FIT（course または activity）を Garmin FIT SDK で組み立てる */
@@ -25,13 +28,15 @@ export function buildFit(opts: {
   name?: string
   points: FitPointInput[]
   useEnhancedAltitude?: boolean
+  /** FIT の manufacturer（garmin = 1, wahoo_fitness = 32）。既定は development */
+  manufacturer?: number
 }): Uint8Array {
   const encoder = new Encoder()
   // writeMesg は Encodable<Mesg> を受けるため、型付きの変数を経由して渡す
   const fileId: Encodable<FileIdMesg> = {
     mesgNum: MESG_NUM.FILE_ID,
     type: FILE_TYPE[opts.type],
-    manufacturer: MANUFACTURER_DEVELOPMENT,
+    manufacturer: opts.manufacturer ?? MANUFACTURER_DEVELOPMENT,
     product: 0,
     timeCreated: opts.points[0]?.time ?? new Date(0),
     serialNumber: 1234,
@@ -58,6 +63,9 @@ export function buildFit(opts: {
       positionLat: Math.round(p.lat * DEG_TO_SEMICIRCLE),
       positionLong: Math.round(p.lon * DEG_TO_SEMICIRCLE),
       ...altitude,
+      ...(p.powerW === undefined ? {} : { power: p.powerW }),
+      ...(p.heartRateBpm === undefined ? {} : { heartRate: p.heartRateBpm }),
+      ...(p.cadenceRpm === undefined ? {} : { cadence: p.cadenceRpm }),
     }
     encoder.writeMesg(record)
   }

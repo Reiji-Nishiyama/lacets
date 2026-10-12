@@ -4,21 +4,33 @@ function baseName(fileName: string): string {
   return fileName.replace(/\.[^.]+$/, '') || fileName
 }
 
-/** ルートファイルを解釈して保存する。解釈できなければ RouteParseError を投げる */
+/**
+ * ルートファイルを解釈して保存する。実走記録なら実走データ（ゴースト用）も保存して紐付ける。
+ * 解釈できなければ RouteParseError を投げる
+ */
 export async function addRouteFromFile(
   fileName: string,
   bytes: Uint8Array,
   db: LacetsDb = defaultDb,
 ): Promise<StoredRoute> {
   // パーサ（FIT SDK を含む）は大きいので、取り込むときだけ読み込む
-  const { importRoute } = await import('../domain/course/importRoute.ts')
+  const { importRouteFile } = await import('../domain/importFile.ts')
+  const { route: imported, reference } = importRouteFile(bytes, baseName(fileName))
+  const createdAt = Date.now()
+  const referenceRideId = reference ? crypto.randomUUID() : undefined
   const route: StoredRoute = {
-    ...importRoute(bytes, baseName(fileName)),
+    ...imported,
     id: crypto.randomUUID(),
     fileName,
-    createdAt: Date.now(),
+    createdAt,
+    ...(referenceRideId ? { referenceRideId } : {}),
   }
-  await db.routes.add(route)
+  await db.transaction('rw', db.routes, db.referenceRides, async () => {
+    await db.routes.add(route)
+    if (reference && referenceRideId) {
+      await db.referenceRides.add({ ...reference, id: referenceRideId, fileName, createdAt })
+    }
+  })
   return route
 }
 

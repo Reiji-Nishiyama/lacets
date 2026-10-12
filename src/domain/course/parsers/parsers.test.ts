@@ -26,6 +26,17 @@ describe('GPX', () => {
     expect(r.points[1]).toEqual({ lat: 35.001, lon: 138.001, elevationM: 1010 })
   })
 
+  it('拡張タグの心拍・パワーを読む', () => {
+    const r = parseRouteFile(
+      enc(`<gpx xmlns:gpxtpx="x"><trk><trkseg>
+        <trkpt lat="1" lon="2"><time>2026-01-01T00:00:00Z</time><extensions><power>250</power>
+          <gpxtpx:TrackPointExtension><gpxtpx:hr>150</gpxtpx:hr><gpxtpx:cad>90</gpxtpx:cad></gpxtpx:TrackPointExtension></extensions></trkpt>
+        <trkpt lat="1.001" lon="2"><time>2026-01-01T00:00:01Z</time></trkpt>
+      </trkseg></trk></gpx>`),
+    )
+    expect(r.points[0]).toMatchObject({ powerW: 250, heartRateBpm: 150, cadenceRpm: 90 })
+  })
+
   it('時刻付きの記録は経過秒数にし、気圧高度扱いにする', () => {
     const r = parseRouteFile(readFixture('recorded-ride.gpx'))
     expect(r.elevationSource).toBe('barometric')
@@ -53,6 +64,20 @@ describe('TCX', () => {
     ])
   })
 
+  it('実走: 心拍・ケイデンス・パワー（TPX 拡張）を読む', () => {
+    const r = parseRouteFile(
+      enc(`<TrainingCenterDatabase><Activities><Activity><Lap><Track>
+        <Trackpoint><Time>2026-01-01T00:00:00Z</Time>
+          <Position><LatitudeDegrees>1</LatitudeDegrees><LongitudeDegrees>2</LongitudeDegrees></Position>
+          <HeartRateBpm><Value>145</Value></HeartRateBpm><Cadence>85</Cadence>
+          <Extensions><ns3:TPX xmlns:ns3="x"><ns3:Watts>230</ns3:Watts></ns3:TPX></Extensions></Trackpoint>
+        <Trackpoint><Time>2026-01-01T00:00:01Z</Time>
+          <Position><LatitudeDegrees>1.001</LatitudeDegrees><LongitudeDegrees>2</LongitudeDegrees></Position></Trackpoint>
+      </Track></Lap></Activity></Activities></TrainingCenterDatabase>`),
+    )
+    expect(r.points[0]).toMatchObject({ powerW: 230, heartRateBpm: 145, cadenceRpm: 85 })
+  })
+
   it('実走: ラップをまたいで連結し、経過秒数を付ける', () => {
     const r = parseRouteFile(readFixture('activity.tcx'))
     expect(r.elevationSource).toBe('barometric')
@@ -78,6 +103,23 @@ describe('FIT', () => {
     expect(r.points[1]?.lon).toBeCloseTo(138.7301, 6)
     expect(r.points[1]?.elevationM).toBeCloseTo(1101.4, 1)
     expect(r.points.map((p) => p.timeS)).toEqual([0, 1, 2])
+  })
+
+  it('実走のパワー・心拍・ケイデンスと記録機器のメーカーを読む', () => {
+    const withSensors = points.map((p, i) => ({
+      ...p,
+      powerW: 200 + i,
+      heartRateBpm: 140,
+      cadenceRpm: 88,
+    }))
+    const wahoo = parseRouteFile(
+      buildFit({ type: 'activity', points: withSensors, manufacturer: 32 }),
+    )
+    expect(wahoo.device).toBe('wahoo')
+    expect(wahoo.points[1]).toMatchObject({ powerW: 201, heartRateBpm: 140, cadenceRpm: 88 })
+    const garmin = parseRouteFile(buildFit({ type: 'activity', points, manufacturer: 1 }))
+    expect(garmin.device).toBe('garmin')
+    expect(garmin.points[0]?.powerW).toBeUndefined()
   })
 
   it('コース（course）: 名前を読み、時刻は使わない', () => {
