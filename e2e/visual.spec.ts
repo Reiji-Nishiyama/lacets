@@ -70,11 +70,18 @@ test('Mapillary のトークンと MapTiler のキーを設定できる', async 
   await page.getByRole('button', { name: '設定' }).click()
   await page.getByLabel('Mapillary のアクセストークン').fill('MLY|test')
   await page.getByLabel('Panoramax の路上画像を使う（キー不要）').uncheck()
-  await page.reload()
-  await page.getByRole('button', { name: '設定' }).click()
-  await expect(page.getByLabel('Mapillary のアクセストークン')).toHaveValue('MLY|test')
+  // 保存（IndexedDB）は非同期なので、反映されるまで再読み込みして確かめる
+  await expect(async () => {
+    await page.reload()
+    await page.getByRole('button', { name: '設定' }).click()
+    await expect(page.getByLabel('Mapillary のアクセストークン')).toHaveValue('MLY|test', {
+      timeout: 1000,
+    })
+    await expect(page.getByLabel('Panoramax の路上画像を使う（キー不要）')).not.toBeChecked({
+      timeout: 1000,
+    })
+  }).toPass({ timeout: 10_000 })
   await expect(page.getByLabel('Mapillary のアクセストークン')).toHaveAttribute('type', 'password')
-  await expect(page.getByLabel('Panoramax の路上画像を使う（キー不要）')).not.toBeChecked()
   await expect(page.getByTestId('maptiler-usage')).toContainText(
     'この端末の今月の使用量（目安）: 0 / 100,000 リクエスト',
   )

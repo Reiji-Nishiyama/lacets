@@ -74,8 +74,11 @@ test('ライダー設定を保存できる', async ({ page }) => {
   await page.getByRole('button', { name: '設定' }).click()
   await page.getByLabel('体重').fill('58')
   await page.getByLabel('ポジション').selectOption('climbing')
-  await page.reload()
-  await page.getByRole('button', { name: '設定' }).click()
-  await expect(page.getByLabel('体重')).toHaveValue('58')
-  await expect(page.getByLabel('ポジション')).toHaveValue('climbing')
+  // 保存（IndexedDB）は非同期なので、反映されるまで再読み込みして確かめる
+  await expect(async () => {
+    await page.reload()
+    await page.getByRole('button', { name: '設定' }).click()
+    await expect(page.getByLabel('体重')).toHaveValue('58', { timeout: 1000 })
+    await expect(page.getByLabel('ポジション')).toHaveValue('climbing', { timeout: 1000 })
+  }).toPass({ timeout: 10_000 })
 })
