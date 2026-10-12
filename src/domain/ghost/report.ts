@@ -23,11 +23,17 @@ export interface SegmentComparison {
   deltaS: number | null
 }
 
-/** 1 km ごとの区間（最後は端数） */
-export function kilometerSegments(totalM: number, stepM = 1000): ReportSegment[] {
+/**
+ * 1 km ごとの区間。ルート上の km の区切りに合わせ、最初と最後は端数
+ * （例: 2.4 km 地点から 4.7 km 地点 → 2.4–3, 3–4, 4–4.7）
+ */
+export function kilometerSegments(fromM: number, toM: number, stepM = 1000): ReportSegment[] {
   const out: ReportSegment[] = []
-  for (let d = 0; d < totalM - 1; d += stepM) {
-    out.push({ kind: 'km', startM: d, endM: Math.min(totalM, d + stepM) })
+  let d = fromM
+  while (d < toM - 1) {
+    const end = Math.min(toM, (Math.floor(d / stepM + 1e-9) + 1) * stepM)
+    out.push({ kind: 'km', startM: d, endM: end })
+    d = end
   }
   return out
 }

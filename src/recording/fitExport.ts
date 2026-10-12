@@ -43,6 +43,7 @@ export function encodeRideFit(
 ): Uint8Array {
   const encoder = new Encoder()
   const start = new Date(ride.startedAtMs)
+  const startDistanceM = ride.startDistanceM ?? 0
   const end = new Date(ride.endedAtMs)
 
   const fileId: Encodable<FileIdMesg> = {
@@ -79,7 +80,8 @@ export function encodeRideFit(
       positionLong: toSemicircles(s.lon),
       altitude: s.elevationM,
       enhancedAltitude: s.elevationM,
-      distance: s.distanceM,
+      // FIT の distance は走った距離（ルートの途中から走った場合も 0 から）
+      distance: Math.max(0, s.distanceM - startDistanceM),
       speed: s.speedMps,
       enhancedSpeed: s.speedMps,
       power: Math.max(0, Math.round(s.powerW)),

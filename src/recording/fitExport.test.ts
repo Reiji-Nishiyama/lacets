@@ -71,6 +71,19 @@ describe('encodeRideFit', () => {
   })
 })
 
+describe('途中から走った記録', () => {
+  it('FIT の distance は走った距離（0 から）', () => {
+    const base = sampleRide()
+    const ride = {
+      ...base,
+      startDistanceM: 5000,
+      samples: base.samples.map((x) => ({ ...x, distanceM: 5000 + x.distanceM })),
+    }
+    const m = decode(encodeRideFit(ride))
+    expect(m.recordMesgs?.[9]?.distance).toBeCloseTo(50, 1)
+  })
+})
+
 describe('rideFitFileName', () => {
   it('日時とルート名からファイル名を作り、使えない文字を置き換える', () => {
     const ride = { ...sampleRide(), routeName: "Alpe d'Huez / 21 lacets" }

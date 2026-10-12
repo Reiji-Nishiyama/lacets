@@ -6,6 +6,7 @@ export interface RideSample {
   timestampMs: number
   /** 走行時間（一時停止を除く）[s] */
   elapsedS: number
+  /** ルート上の位置（ルートの始点からの距離。途中から走った場合は開始地点の距離から始まる） */
   distanceM: number
   /** 仮想ルート上の位置 */
   lat: number
@@ -60,4 +61,8 @@ export interface RecordedRide {
   settings: RiderSettings
   /** 走行中に比べたゴースト */
   ghost?: GhostRef & { name: string }
+  /** ルートを逆方向に走った（#6） */
+  reversed?: boolean
+  /** 走り始めたルート上の距離（#5）。なければ 0 */
+  startDistanceM?: number
 }

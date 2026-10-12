@@ -56,3 +56,9 @@
   - 衛星画像は走行中に次々読み込むため 1 時間で数千リクエストになりうる。**キーは各自が取得する**（1 つのキーを共有しない）
   - 実装: ロゴは `RouteMap` が MapTiler のスタイルのときに表示。この端末の今月のリクエスト数の目安を数えて設定画面に表示（`src/media/maptilerUsage.ts`、キャッシュ分も数えるので多めに出る）。401 / 403 / 429 で拒否されたら、そのセッションは通常の地図に戻して案内を出す
 - **暫定**: 2D 地図は登録・API キー不要の OpenFreeMap（`https://tiles.openfreemap.org/styles/liberty`）を使用。`VITE_MAP_STYLE_URL` で差し替え可能（`src/ui/common/mapConfig.ts`）。OSM のクレジットはスタイルの attribution で表示される。M5 の 3D 地形ビュー（地形・衛星タイル）は別途選定（Q3）
+
+## Cloudflare（M3 の OAuth 中継、M6 のデプロイ）
+- Workers は最初から無料プラン（Free）が使える。1 日 100,000 リクエスト、1 回あたり CPU 10 ms（2026-10-12 確認、https://developers.cloudflare.com/workers/platform/pricing/）。仲間 10 人程度のトークン交換・更新なら十分収まる
+- 登録時にクレジットカードが必要かは料金ページに記載がない。登録時に確認する
+- Pages の無料範囲は M6 で確認する（代替: リポジトリを公開するなら GitHub Pages）
+

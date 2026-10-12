@@ -155,4 +155,36 @@ describe('RideEngine', () => {
     await trainer.connect()
     expect(engine.snapshot.status).toBe('running')
   })
+
+  it('ルートの途中から走り始められる（走った距離と残りはその地点から）', () => {
+    engine.dispose()
+    engine = new RideEngine({
+      course,
+      trainer,
+      settings: DEFAULT_RIDER_SETTINGS,
+      startDistanceM: 600,
+      now: () => Date.now(),
+    })
+    expect(engine.snapshot.distanceM).toBe(600)
+    expect(engine.snapshot.travelledM).toBe(0)
+    expect(engine.snapshot.remainingM).toBe(400)
+    engine.start()
+    // 開始地点は 8% の登り
+    expect(grades()[0]).toBeCloseTo(0.08)
+    vi.advanceTimersByTime(10_000)
+    expect(engine.snapshot.travelledM).toBeCloseTo(engine.snapshot.distanceM - 600)
+    expect(engine.snapshot.travelledM).toBeGreaterThan(10)
+  })
+
+  it('開始地点は終点の手前にクランプする', () => {
+    engine.dispose()
+    engine = new RideEngine({
+      course,
+      trainer,
+      settings: DEFAULT_RIDER_SETTINGS,
+      startDistanceM: 5000,
+      now: () => Date.now(),
+    })
+    expect(engine.snapshot.distanceM).toBe(999)
+  })
 })

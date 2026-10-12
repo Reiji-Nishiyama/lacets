@@ -21,7 +21,10 @@ export type RideStatus = 'ready' | 'running' | 'paused' | 'autoPaused' | 'finish
 export interface RideSnapshot {
   status: RideStatus
   elapsedS: number
+  /** ルート上の位置 */
   distanceM: number
+  /** 走り始めてから進んだ距離（ルートの途中から走った場合は distanceM と異なる） */
+  travelledM: number
   remainingM: number
   speedMps: number
   powerW: number
@@ -43,6 +46,8 @@ export interface RideEngineOptions {
   trainer: TrainerDevice
   heartRate?: HeartRateSensor | null
   settings: RiderSettings
+  /** 走り始めるルート上の距離（#5）。既定は始点 */
+  startDistanceM?: number
   /** 走行ループの間隔 [ms]（4 Hz） */
   tickMs?: number
   /** これより古いパワーは 0 とみなす [ms] */
@@ -64,6 +69,7 @@ export class RideEngine {
   private readonly settings: RiderSettings
   private readonly physics: PhysicsParams
   private readonly tickMs: number
+  private readonly startDistanceM: number
   private readonly staleDataMs: number
   private readonly now: () => number
   private readonly throttle = new GradeThrottle()
@@ -90,6 +96,11 @@ export class RideEngine {
     this.settings = opts.settings
     this.physics = physicsParamsFor(opts.settings)
     this.tickMs = opts.tickMs ?? 250
+    this.startDistanceM = Math.min(
+      Math.max(0, opts.startDistanceM ?? 0),
+      Math.max(0, this.course.distanceM - 1),
+    )
+    this.progress = { ...INITIAL_PROGRESS, distanceM: this.startDistanceM }
     this.staleDataMs = opts.staleDataMs ?? 2000
     this.now = opts.now ?? (() => performance.now())
 
@@ -119,6 +130,7 @@ export class RideEngine {
       status: this.status,
       elapsedS: this.progress.elapsedS,
       distanceM: this.progress.distanceM,
+      travelledM: this.progress.distanceM - this.startDistanceM,
       remainingM: Math.max(0, this.course.distanceM - this.progress.distanceM),
       speedMps: this.progress.speedMps,
       powerW: active && trainerFresh ? (this.latestTrainer?.powerW ?? 0) : 0,

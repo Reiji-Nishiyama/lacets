@@ -75,6 +75,13 @@ export const ja = {
   'preview.steepSections':
     '±25% を超える勾配が {count} か所あったため、前後の勾配から補間しました（データの誤りの可能性があります）。',
   'preview.start': '走行を開始',
+  'preview.reverse': '逆方向に走る',
+  'start.heading': '開始地点',
+  'start.reset': '始点に戻す',
+  'start.fromBeginning': 'ルートの始点から走ります',
+  'start.value':
+    '{km} km 地点（標高 {elevation} m・勾配 {grade}%）から走ります。残り {remaining} km',
+  'start.hint': 'スライダーか、上の勾配プロファイルをクリックして選びます。',
   'preview.connectFirst': '走行を始めるには、先にトレーナーを接続してください。',
   'preview.elevationSource.barometric': '標高: 実走記録（軽く平滑化）',
   'preview.elevationSource.dem': '標高: ルートデータ（強めに平滑化）',

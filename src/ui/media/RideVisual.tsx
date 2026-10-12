@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Course } from '../../domain/course/Course.ts'
 import { imageAt, imagesBetween } from '../../domain/media/streetImages.ts'
-import type { StoredRoute } from '../../store/db.ts'
+import type { RouteVariant } from '../../store/routeVariant.ts'
 import { useSettingsStore } from '../../store/settingsStore.ts'
 import {
   ensureStreetImages,
@@ -32,7 +32,7 @@ export function RideVisual({
   position,
   ghostPosition,
 }: {
-  route: StoredRoute
+  route: RouteVariant
   course: Course
   distanceM: number
   position: MapPosition
@@ -40,7 +40,7 @@ export function RideVisual({
 }) {
   const [mode, setMode] = useState<VisualMode>('auto')
   const media = useSettingsStore((s) => s.media)
-  const key = streetImageKey(route.id, media)
+  const key = streetImageKey(route.variantKey, media)
   const images = useStreetImageStore((s) => s.byKey[key])
 
   useEffect(() => {

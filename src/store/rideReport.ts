@@ -9,6 +9,7 @@ import {
 import type { RecordedRide } from '../recording/types.ts'
 import { loadGhost } from './ghosts.ts'
 import { getRoute } from './routeRepository.ts'
+import { routeVariant } from './routeVariant.ts'
 
 export interface RideReport {
   kilometers: SegmentComparison[]
@@ -19,18 +20,23 @@ export interface RideReport {
 
 /** 走行後の区間比較レポートを作る（F5-4）。ルートが削除されていれば 1 km ごとだけ */
 export async function buildRideReport(ride: RecordedRide): Promise<RideReport> {
-  const route = await getRoute(ride.routeId)
-  const user = ghostFromRecordedRide(ride.samples)
+  const stored = await getRoute(ride.routeId)
+  const route = stored ? routeVariant(stored, !!ride.reversed) : null
+  const startM = ride.startDistanceM ?? 0
+  const user = ghostFromRecordedRide(ride.samples, startM)
   const ghost = ride.ghost && route ? await loadGhost(ride.ghost, route) : null
   const userMassKg = ride.settings.riderMassKg
   const ghostMassKg = ghost?.riderMassKg ?? userMassKg
-  const ridden = ride.stats.distanceM
+  const endM = startM + ride.stats.distanceM
+  // 走った範囲に収まる登りだけ
   const climbs = route
-    ? climbSegments(detectClimbs(route.profile)).filter((c) => c.endM <= ridden + 1)
+    ? climbSegments(detectClimbs(route.profile)).filter(
+        (c) => c.startM >= startM - 1 && c.endM <= endM + 1,
+      )
     : []
   return {
     kilometers: compareSegments(
-      kilometerSegments(ridden),
+      kilometerSegments(startM, endM),
       user,
       ghost?.track ?? null,
       userMassKg,
