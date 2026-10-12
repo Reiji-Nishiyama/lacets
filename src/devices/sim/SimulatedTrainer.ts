@@ -1,3 +1,4 @@
+import { DEFAULT_PHYSICS, steadySpeedMps } from '../../domain/physics/model.ts'
 import type { ConnectionState } from '../ConnectionState.ts'
 import { Emitter, type Unsubscribe } from '../emitter.ts'
 import {
@@ -22,6 +23,11 @@ export interface SimulatedTrainerOptions {
   random?: () => number
   /** パワーのゆらぎ（±割合） */
   noiseRatio?: number
+  /**
+   * 実機のトレーナーと同じく、内部で想定している総重量 [kg]（#7）。
+   * 報告する速度（トレーナー速度）をこの重量で計算するので、勾配テストから逆算できる
+   */
+  assumedTotalMassKg?: number
 }
 
 const SIMULATED_CAPABILITIES: TrainerCapabilities = {
@@ -40,6 +46,9 @@ export class SimulatedTrainer implements TrainerDevice {
   private timer: ReturnType<typeof setInterval> | null = null
   private dropoutTimer: ReturnType<typeof setTimeout> | null = null
   private grade = 0
+  private crr = 0.004
+  private cwKgPerM = 0.196
+  private readonly assumedTotalMassKg: number
   private _settings: SimulatedRiderSettings = DEFAULT_SIMULATED_RIDER
   private readonly dataEmitter = new Emitter<TrainerData>()
   private readonly stateEmitter = new Emitter<ConnectionState>()
@@ -53,6 +62,7 @@ export class SimulatedTrainer implements TrainerDevice {
     this.now = opts.now ?? Date.now
     this.random = opts.random ?? Math.random
     this.noiseRatio = opts.noiseRatio ?? 0.03
+    this.assumedTotalMassKg = opts.assumedTotalMassKg ?? 82
   }
 
   get state(): ConnectionState {
@@ -92,6 +102,8 @@ export class SimulatedTrainer implements TrainerDevice {
 
   async setSimulation(params: SimulationParams): Promise<void> {
     this.grade = clampGrade(params.grade, SIMULATED_CAPABILITIES.gradeRange)
+    this.crr = params.crr
+    this.cwKgPerM = params.cwKgPerM
   }
 
   /** 一時的な切断を再現する（自動再接続と走行一時停止の確認用）。 */
@@ -128,7 +140,14 @@ export class SimulatedTrainer implements TrainerDevice {
     const noise = 1 + (this.random() * 2 - 1) * this.noiseRatio
     const powerW = Math.round(simulatedPowerW(this._settings, this.grade) * noise)
     const cadenceRpm = Math.round(simulatedCadenceRpm(this._settings, this.grade))
-    this.dataEmitter.emit({ powerW, cadenceRpm, timestampMs: this.now() })
+    // 実機と同じく、想定総重量で釣り合う速度を報告する（走行の計算には使われない）
+    const trainerSpeedMps = steadySpeedMps(powerW, this.grade, {
+      ...DEFAULT_PHYSICS,
+      totalMassKg: this.assumedTotalMassKg,
+      cdaM2: this.cwKgPerM / (0.5 * DEFAULT_PHYSICS.airDensityKgPerM3),
+      crr: this.crr,
+    })
+    this.dataEmitter.emit({ powerW, cadenceRpm, trainerSpeedMps, timestampMs: this.now() })
   }
 
   private setState(state: ConnectionState) {

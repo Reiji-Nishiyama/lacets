@@ -49,6 +49,7 @@ export function rideDiagnosticsCsv(ride: RecordedRide): string {
       start_distance_m: startM,
       started_at: new Date(ride.startedAtMs).toISOString(),
       ...settingsMeta(ride.settings),
+      trainer_mass_ratio: ride.trainerMassRatio ?? 1,
     },
     [
       'time',
