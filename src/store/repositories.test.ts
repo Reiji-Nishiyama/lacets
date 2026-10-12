@@ -3,6 +3,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { readFixture } from '../../test/helpers/fixtures.ts'
 import { DEFAULT_RIDER_SETTINGS } from '../domain/rider.ts'
 import { createDb, type LacetsDb } from './db.ts'
+import { sampleRide } from '../../test/helpers/recordedRide.ts'
+import { getRide, listRides, saveRide } from './rideRepository.ts'
 import { addRouteFromFile, deleteRoute, getRoute, listRoutes } from './routeRepository.ts'
 import { loadRiderSettings, saveRiderSettings } from './settingsRepository.ts'
 
@@ -55,5 +57,18 @@ describe('settingsRepository', () => {
     expect((await loadRiderSettings(db)).riderMassKg).toBe(58)
     await db.settings.put({ key: 'rider', value: { bikeMassKg: 7 } })
     expect(await loadRiderSettings(db)).toEqual({ ...DEFAULT_RIDER_SETTINGS, bikeMassKg: 7 })
+  })
+})
+
+describe('rideRepository', () => {
+  it('走行記録を保存して読み出せる（新しい順）', async () => {
+    const a = sampleRide()
+    const b = { ...sampleRide(), id: 'ride-2', startedAtMs: a.startedAtMs + 86_400_000 }
+    await saveRide(a, db)
+    await saveRide(b, db)
+    expect((await listRides(db)).map((r) => r.id)).toEqual(['ride-2', 'ride-1'])
+    const loaded = await getRide('ride-1', db)
+    expect(loaded?.samples).toHaveLength(90)
+    expect(loaded?.stats).toEqual(a.stats)
   })
 })

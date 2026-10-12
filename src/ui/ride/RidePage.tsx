@@ -6,11 +6,11 @@ import { Stat } from '../common/Stat.tsx'
 import { formatGradePct, formatInt, formatKm, formatKmh } from '../format.ts'
 import { t } from '../i18n/index.ts'
 import { useNavigation } from '../navigation.ts'
+import { RideSummaryPanel } from './RideSummaryPanel.tsx'
 
 export function RidePage() {
   const route = useRideStore((s) => s.route)
   const snapshot = useRideStore((s) => s.snapshot)
-  const summary = useRideStore((s) => s.summary)
   const navigate = useNavigation((s) => s.navigate)
 
   if (!route || !snapshot) return null
@@ -77,24 +77,7 @@ export function RidePage() {
         />
       </div>
 
-      {summary && (
-        <div className="panel summary" data-testid="ride-summary">
-          <h3>{t('summary.title')}</h3>
-          <div className="stats">
-            <Stat
-              label={t('metric.distance')}
-              value={formatKm(summary.distanceM, 2)}
-              unit={t('unit.km')}
-            />
-            <Stat label={t('metric.elapsed')} value={formatDuration(summary.elapsedS)} />
-            <Stat
-              label={t('summary.averagePower')}
-              value={formatInt(summary.averagePowerW)}
-              unit={t('unit.watt')}
-            />
-          </div>
-        </div>
-      )}
+      {status === 'finished' && <RideSummaryPanel />}
 
       <div className="actions">
         {status === 'running' || status === 'autoPaused' ? (

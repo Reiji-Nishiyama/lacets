@@ -1,11 +1,17 @@
+import { Decoder, Stream } from '@garmin/fitsdk'
 import { expect, test } from '@playwright/test'
+import { readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 
 const fixture = (name: string) =>
   fileURLToPath(new URL(`../test/fixtures/${name}`, import.meta.url))
 
-test('ルートを取り込み、確認して走り、一時停止・再開・終了できる', async ({ page }) => {
+test('ルートを取り込んで走り、一時停止・再開・終了して FIT を書き出せる', async ({ page }) => {
   page.on('dialog', (d) => void d.accept())
+  // 保存ダイアログ（File System Access API）は操作できないので、ダウンロードリンクの経路を使う
+  await page.addInitScript(() => {
+    delete (globalThis as { showSaveFilePicker?: unknown }).showSaveFilePicker
+  })
   await page.goto('/?sim=1')
 
   // 取り込み
@@ -42,6 +48,23 @@ test('ルートを取り込み、確認して走り、一時停止・再開・�
   await page.getByRole('button', { name: '終了' }).click()
   await expect(page.getByTestId('ride-status')).toHaveText('ゴール')
   await expect(page.getByTestId('ride-summary')).toBeVisible()
+  await expect(page.getByTestId('summary-save-state')).toHaveText(
+    '走行記録をこの端末に保存しました',
+  )
+
+  // FIT の書き出し
+  const downloadPromise = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'FIT ファイルを書き出す' }).click()
+  const download = await downloadPromise
+  expect(download.suggestedFilename()).toMatch(/^lacets-\d{8}-\d{4}-Synthetic_Lacets\.fit$/)
+  const bytes = new Uint8Array(await readFile(await download.path()))
+  const decoder = new Decoder(Stream.fromByteArray(bytes))
+  expect(decoder.checkIntegrity()).toBe(true)
+  const { messages } = new Decoder(Stream.fromByteArray(bytes)).read()
+  expect(messages.sessionMesgs?.[0]?.subSport).toBe('virtualActivity')
+  expect(messages.recordMesgs?.length).toBeGreaterThan(0)
+  expect(messages.recordMesgs?.[0]?.positionLat).toBeDefined()
+
   await page.getByRole('button', { name: 'ルート一覧へ' }).click()
   await expect(page.getByRole('heading', { name: 'ルート', exact: true })).toBeVisible()
 })

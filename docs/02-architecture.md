@@ -50,10 +50,13 @@ Route {
   elevationSource: 'barometric' | 'dem';
   createdAt: number;
 }
-Ride {
-  id; routeId; startedAt; durationS;
-  samples: Sample[];           // 1Hz: tS, distanceM, powerW, cadence, hr, speedMps, grade
-  ghostRideId?: string;
+Ride {                         // 実装: src/recording/types.ts の RecordedRide
+  id; routeId; routeName; startedAtMs; endedAtMs;
+  samples: Sample[];           // 1Hz: timestampMs, elapsedS, distanceM, lat, lon, elevationM,
+                               //      speedMps, powerW, cadenceRpm, heartRateBpm, grade
+  events: { timestampMs; type: 'start' | 'stop' }[];  // 一時停止・再開（FIT の timer イベント）
+  stats: RideStats;            // 走行時間・距離・獲得標高・平均/最大パワー等
+  ghostRideId?: string;        // M4
   settings: RiderSettings;     // 走行時点の体重等をスナップショット
 }
 ReferenceRide {                // 実走 FIT（ゴースト用）
@@ -128,6 +131,8 @@ FTMS へ送るパラメータ: grade、Crr、Cw（= 0.5·ρ·CdA [kg/m]）、風
 
 ## 10. 記録とエクスポート（recording）
 - FIT（Activity, sport=cycling, sub_sport=virtual_activity）に、仮想位置の緯度経度・標高・パワー・ケイデンス・心拍・速度を書き出す
+- RideEngine の記録ティック（約 1 秒ごと、走行中のみ）でサンプルを取り、時刻は秒に丸める。一時停止・自動一時停止は timer の stop_all / start イベントで表す
+- メッセージ構成: file_id → (event / record を時刻順) → lap → session → activity。走行終了時に IndexedDB に保存し、FIT は結果画面から書き出す（`src/recording/fitExport.ts`）
 - Strava アップロード時は sport_type を VirtualRide とする
 
 ## 11. BLE トランスポート（devices/ble）
