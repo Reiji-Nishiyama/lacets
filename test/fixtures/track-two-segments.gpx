@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 自作フィクスチャ: 2 セグメントの trk、時刻なし（ルート作成サービスの書き出しを想定） -->
+<gpx version="1.1" creator="lacets-test" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata><name>テスト峠</name></metadata>
+  <trk>
+    <name>trk name</name>
+    <trkseg>
+      <trkpt lat="45.0000" lon="6.0000"><ele>700.0</ele></trkpt>
+      <trkpt lat="45.0010" lon="6.0000"><ele>708.0</ele></trkpt>
+    </trkseg>
+    <trkseg>
+      <trkpt lat="45.0020" lon="6.0000"><ele>716.0</ele></trkpt>
+      <trkpt lat="45.0030" lon="6.0000"/>
+    </trkseg>
+  </trk>
+</gpx>

@@ -44,9 +44,10 @@ Route {
   id: string; name: string;
   source: 'strava' | 'gpx' | 'tcx' | 'fit';
   sourceRef?: string;          // Strava route id 等
-  points: RoutePoint[];        // 生データ（lat, lon, ele?, timeS?）
-  profile: ProfilePoint[];     // 10m 間隔に再サンプル済み（distanceM, ele, grade, lat, lon）
-  stats: { distanceM; ascentM; maxGrade; };
+  points: RoutePoint[];        // 生データ（lat, lon, elevationM?, timeS?）
+  profile: ProfilePoint[];     // 10m 間隔に再サンプル済み（distanceM, elevationM, grade, lat, lon）
+  stats: { distanceM; ascentM; descentM; maxGrade; minGrade; };
+  elevationSource: 'barometric' | 'dem';
   createdAt: number;
 }
 Ride {
@@ -62,7 +63,7 @@ ReferenceRide {                // 実走 FIT（ゴースト用）
 VideoAsset {                   // 動画本体は File System Access API のハンドル or OPFS
   id; routeId; fileHandle; offsetS; distanceToVideoTime: [distanceM, videoS][];
 }
-RiderSettings { massKg; bikeMassKg; cdaM2; crr; difficulty /*0..1*/; }
+RiderSettings { riderMassKg; bikeMassKg; position: 'hoods'|'drops'|'climbing'; crr; difficulty /*0..1*/; }  // CdA は position から決まる
 ```
 
 ## 4. 走行ループ（RideEngine）
@@ -96,9 +97,11 @@ FTMS へ送るパラメータ: grade、Crr、Cw（= 0.5·ρ·CdA [kg/m]）、風
 2. 距離計算: Haversine で累積距離
 3. 10 m 間隔に再サンプリング（座標は線形補間）
 4. 標高平滑化: 
-   - 実走 FIT（気圧高度）: 軽い移動平均（〜30 m）
-   - Strava/Garmin ルート（DEM 由来）: 外れ値除去（中央値フィルタ）→ 移動平均（〜100 m）
-5. 勾配: 中心差分 `(ele[i+k] − ele[i−k]) / (2k·10m)`、k は 2〜5
+   - 実走 FIT（気圧高度）: 軽い平滑化（〜30 m）
+   - Strava/Garmin ルート（DEM 由来）: 外れ値除去（中央値フィルタ〜50 m）→ 平滑化（〜100 m）
+   - 平滑化は局所線形回帰（内部では移動平均と同じ。端でも登りの勾配が潰れない）
+   - 時刻付きの GPX・TCX 実走・FIT activity は気圧高度扱い、それ以外（ルート・コース）は DEM 扱い
+5. 勾配: 中心差分 `(ele[i+k] − ele[i−k]) / (2k·10m)`、k は 2〜5（既定 3）
 6. 物理的にありえない勾配（±25% 超）は警告し、近傍で補間
 7. ループ・往復ルートは距離ベースで扱うため問題なし。終点到達で走行終了
 

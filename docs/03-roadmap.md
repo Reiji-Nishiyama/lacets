@@ -26,9 +26,9 @@
 - **DoD**: 【実機】スライダーで勾配を 0→10% に変えると負荷が上がり、実変速で軽くできる。**Windows（Chrome）・macOS（Chrome）・iPad（Bluefy）の3環境で確認**する（iPad で動かない場合は原因を記録し、M8 の前倒しを判断）
 
 ## M2. ルート取り込みと走行（MVP）
-- [ ] GPX / TCX / FIT パーサ（`test/fixtures/` に自作ファイル）
-- [ ] 再サンプル・標高平滑化・勾配計算（`domain/course`）
-- [ ] 物理モデル（`domain/physics`）とテスト
+- [x] GPX / TCX / FIT パーサ（`test/fixtures/` に自作ファイル）
+- [x] 再サンプル・標高平滑化・勾配計算（`domain/course`）
+- [x] 物理モデル（`domain/physics`）とテスト
 - [ ] RideEngine（走行ループ、勾配送信の間引き、lookahead）
 - [ ] ルート一覧・取り込み（D&D）・事前確認画面（地図、勾配プロファイル、統計）
 - [ ] 走行画面（地図上の現在位置、プロファイル、メトリクス）

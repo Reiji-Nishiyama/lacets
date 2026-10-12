@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 自作フィクスチャ: TCX コース（位置のない Trackpoint を含む） -->
+<TrainingCenterDatabase xmlns="http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2">
+  <Courses>
+    <Course>
+      <Name>TCX Course</Name>
+      <Track>
+        <Trackpoint>
+          <Time>2026-01-01T00:00:00Z</Time>
+          <Position><LatitudeDegrees>45.0</LatitudeDegrees><LongitudeDegrees>6.0</LongitudeDegrees></Position>
+          <AltitudeMeters>700</AltitudeMeters>
+        </Trackpoint>
+        <Trackpoint><Time>2026-01-01T00:00:01Z</Time></Trackpoint>
+        <Trackpoint>
+          <Time>2026-01-01T00:00:02Z</Time>
+          <Position><LatitudeDegrees>45.001</LatitudeDegrees><LongitudeDegrees>6.0</LongitudeDegrees></Position>
+          <AltitudeMeters>705.5</AltitudeMeters>
+        </Trackpoint>
+      </Track>
+    </Course>
+  </Courses>
+</TrainingCenterDatabase>

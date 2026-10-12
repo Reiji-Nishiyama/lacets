@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 自作フィクスチャ: rte/rtept のみの GPX 1.0 -->
+<gpx version="1.0" creator="lacets-test" xmlns="http://www.topografix.com/GPX/1/0">
+  <rte>
+    <name>Route only</name>
+    <rtept lat="35.0" lon="138.0"><ele>1000</ele></rtept>
+    <rtept lat="35.001" lon="138.001"><ele>1010</ele></rtept>
+  </rte>
+</gpx>
