@@ -17,6 +17,7 @@ import { StreetImageCoverage } from '../media/StreetImageCoverage.tsx'
 import { useNavigation } from '../navigation.ts'
 import { ProgressMarkerRow } from '../ride/ProgressMarkerRow.tsx'
 import { GhostPicker } from './GhostPicker.tsx'
+import { RouteNameEditor } from './RouteNameEditor.tsx'
 import { StartPointPicker } from './StartPointPicker.tsx'
 
 /**
@@ -88,7 +89,7 @@ export function RoutePreviewPage({ routeId }: { routeId: string }) {
         <button type="button" className="back-pill" onClick={() => navigate({ name: 'routes' })}>
           ← {t('preview.back')}
         </button>
-        <h2 className="page-hero-title">{variant.name}</h2>
+        <RouteNameEditor key={variant.id} routeId={variant.id} name={variant.name} />
         <p className="page-hero-subtitle">
           {t('preview.subtitle', { from: formatMeters(fromM), to: formatMeters(toM) })}
         </p>
