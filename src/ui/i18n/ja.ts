@@ -62,9 +62,7 @@ export const ja = {
   'routes.error.notRecorded': '{file}: 時刻のないファイル（ルート）は実走データとして使えません',
   'routes.error.unknown': '{file}: 取り込みに失敗しました（{detail}）',
 
-  'stats.distance': '距離',
   'stats.ascent': '獲得標高',
-  'stats.descent': '下り',
   'stats.maxGrade': '最大勾配',
   'unit.km': 'km',
   'unit.m': 'm',
@@ -74,20 +72,28 @@ export const ja = {
   'preview.noElevation': 'このルートには標高データがありません。勾配 0% として走ります。',
   'preview.steepSections':
     '±25% を超える勾配が {count} か所あったため、前後の勾配から補間しました（データの誤りの可能性があります）。',
-  'preview.start': '走行を開始',
+  'preview.start': '走りはじめる',
+  'preview.back': 'ルート一覧',
+  'preview.subtitle': '標高 {from} m から {to} m へ',
+  'preview.connectHint': 'まずトレーナーにつなぎます',
+  'chip.distance': '距離',
+  'chip.ascent': 'のぼり',
+  'chip.descent': 'くだり',
+  'chip.maxGrade': '最大',
   'preview.reverse': '逆方向に走る',
   'start.heading': '開始地点',
   'start.reset': '始点に戻す',
   'start.fromBeginning': 'ルートの始点から走ります',
   'start.value':
     '{km} km 地点（標高 {elevation} m・勾配 {grade}%）から走ります。残り {remaining} km',
-  'start.hint': 'スライダーか、上の勾配プロファイルをクリックして選びます。',
+  'start.hint': '勾配図をクリックするか、スライダーで開始地点を選べます。',
   'preview.connectFirst': '走行を始めるには、先にトレーナーを接続してください。',
   'preview.elevationSource.barometric': '標高: 実走記録（軽く平滑化）',
   'preview.elevationSource.dem': '標高: ルートデータ（強めに平滑化）',
 
   'map.unavailable': '地図を表示できません（WebGL が使えない環境です）',
   'profile.label': '勾配プロファイル',
+  'profile.contours': '白い線は {interval} m ごとの等高線',
 
   'ride.status.ready': '準備中',
   'ride.status.running': '走行中',
@@ -173,14 +179,11 @@ export const ja = {
   'visual.provider.panoramax': 'Panoramax',
   'visual.provider.mapillary': 'Mapillary',
 
-  'streetImages.heading': '路上画像',
   'streetImages.loading': 'ルート沿いの路上画像を探しています…',
-  'streetImages.coverage':
-    'ルートの {coverage}% で路上画像を表示できます（{counts}）。画像のない区間は 3D 地形ビューになります。',
-  'streetImages.none':
-    'ルート沿いの路上画像は見つかりませんでした。走行中は 3D 地形ビューを表示します。',
-  'streetImages.disabled': '路上画像は使わない設定です（設定画面で変更できます）。',
   'streetImages.count': '{provider} {count} 枚',
+  'streetImages.pill': '路上画像 ルートの {coverage}%（{counts}）',
+  'streetImages.pillNone': '路上画像なし（3D 地形で走ります）',
+  'streetImages.pillDisabled': '路上画像は使わない設定です',
   'streetImages.error.auth':
     '{provider}: アクセストークンが正しくありません（設定画面で確認してください）',
   'streetImages.error.network': '{provider}: {message}',

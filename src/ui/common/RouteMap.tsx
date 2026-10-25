@@ -4,6 +4,7 @@ import type { ProfilePoint } from '../../domain/course/types.ts'
 import { t } from '../i18n/index.ts'
 import { countMaptilerRequest, isMaptilerUrl } from '../../media/maptilerUsage.ts'
 import { MAP_STYLE_URL, TERRAIN_ATTRIBUTION, TERRAIN_MAX_ZOOM, TERRAIN_TILES } from './mapConfig.ts'
+import { RELIEF_COLORS } from './relief.ts'
 
 /** 走行中に現在地を追うときのズーム（2D / 3D） */
 const FOLLOW_ZOOM = 15
@@ -35,6 +36,7 @@ export function RouteMap({
   bearingDeg,
   styleUrl = MAP_STYLE_URL,
   className = 'map',
+  relief = false,
   onMaptilerError,
 }: {
   profile: readonly ProfilePoint[]
@@ -47,6 +49,8 @@ export function RouteMap({
   bearingDeg?: number
   styleUrl?: string
   className?: string
+  /** 標高の帯で塗り分ける（docs/07-design.md。勾配図と同じ色の段） */
+  relief?: boolean
   /** MapTiler がキーの誤り・利用上限で拒否したとき（呼び出し側で通常の地図に戻す） */
   onMaptilerError?: (status: number) => void
 }) {
@@ -82,7 +86,8 @@ export function RouteMap({
           container: containerRef.current,
           style: styleUrl,
           bounds,
-          fitBoundsOptions: { padding: 40 },
+          // 上は路上画像のピル、下は出典の分だけ空けて、始点とゴールの印が隠れないようにする
+          fitBoundsOptions: { padding: { top: 64, bottom: 56, left: 40, right: 40 } },
           attributionControl: { compact: true },
           maxPitch: 75,
           // MapTiler の無料プランの使用量の目安を数える（docs/04）
@@ -93,22 +98,13 @@ export function RouteMap({
         })
         map = m
         m.on('load', () => {
+          // 出典は最初から「i」ボタンに畳み、ルートに重ねない（押すと開く）
+          m.getContainer()
+            .querySelector('.maplibregl-ctrl-attrib')
+            ?.classList.remove('maplibregl-compact-show')
           if (terrain) addTerrain(m)
-          m.addSource('route', {
-            type: 'geojson',
-            data: {
-              type: 'Feature',
-              properties: {},
-              geometry: { type: 'LineString', coordinates: coords },
-            },
-          })
-          m.addLayer({
-            id: 'route-line',
-            type: 'line',
-            source: 'route',
-            layout: { 'line-join': 'round', 'line-cap': 'round' },
-            paint: { 'line-color': '#e8590c', 'line-width': terrain ? 6 : 4 },
-          })
+          if (relief) addRelief(m, profile)
+          addRoute(m, coords, terrain)
         })
         m.on('error', (e) => {
           console.warn('地図のエラー', e.error)
@@ -117,8 +113,8 @@ export function RouteMap({
             onMaptilerErrorRef.current?.(err.status ?? 0)
           }
         })
-        markerRef.current = new maplibregl.Marker({ color: '#1c7ed6' })
-        ghostMarkerRef.current = new maplibregl.Marker({ color: '#868e96', scale: 0.8 })
+        markerRef.current = new maplibregl.Marker({ element: dot('map-dot map-dot-here') })
+        ghostMarkerRef.current = new maplibregl.Marker({ element: dot('map-dot map-dot-ghost') })
         mapRef.current = m
       } catch (e) {
         console.warn('地図を初期化できませんでした', e)
@@ -135,7 +131,7 @@ export function RouteMap({
       mapRef.current = null
       followStartedRef.current = false
     }
-  }, [profile, terrain, styleUrl])
+  }, [profile, terrain, styleUrl, relief])
 
   useEffect(() => {
     const map = mapRef.current
@@ -192,6 +188,131 @@ function MaptilerLogo() {
     >
       <img src="https://api.maptiler.com/resources/logo.svg" alt="MapTiler" />
     </a>
+  )
+}
+
+/** 現在地・ゴーストの丸（HTML 要素のマーカー） */
+function dot(className: string): HTMLElement {
+  const el = document.createElement('div')
+  el.className = className
+  return el
+}
+
+const PINE = '#2c5f4f'
+const SUN = '#f4b63c'
+
+/** ルート: 白い縁取りの太い緑の線、スタートは白、ゴールは太陽の黄色の丸（docs/07-design.md） */
+function addRoute(m: MapLibreMap, coords: [number, number][], terrain: boolean) {
+  m.addSource('route', {
+    type: 'geojson',
+    data: {
+      type: 'Feature',
+      properties: {},
+      geometry: { type: 'LineString', coordinates: coords },
+    },
+  })
+  m.addLayer({
+    id: 'route-casing',
+    type: 'line',
+    source: 'route',
+    layout: { 'line-join': 'round', 'line-cap': 'round' },
+    paint: { 'line-color': '#ffffff', 'line-width': terrain ? 11 : 10 },
+  })
+  m.addLayer({
+    id: 'route-line',
+    type: 'line',
+    source: 'route',
+    layout: { 'line-join': 'round', 'line-cap': 'round' },
+    paint: { 'line-color': PINE, 'line-width': terrain ? 6 : 5 },
+  })
+  const first = coords[0]
+  const last = coords[coords.length - 1]
+  if (!first || !last) return
+  m.addSource('route-ends', {
+    type: 'geojson',
+    data: {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          properties: { end: 'start' },
+          geometry: { type: 'Point', coordinates: first },
+        },
+        {
+          type: 'Feature',
+          properties: { end: 'goal' },
+          geometry: { type: 'Point', coordinates: last },
+        },
+      ],
+    },
+  })
+  m.addLayer({
+    id: 'route-ends',
+    type: 'circle',
+    source: 'route-ends',
+    paint: {
+      'circle-radius': 8,
+      'circle-color': ['match', ['get', 'end'], 'goal', SUN, '#ffffff'],
+      'circle-stroke-color': PINE,
+      'circle-stroke-width': 3,
+    },
+  })
+}
+
+/** 標高の帯で塗り分け、陰影を付ける。色はルートの最低点 → 最高点に合わせる（勾配図と同じ段） */
+function addRelief(m: MapLibreMap, profile: readonly ProfilePoint[]) {
+  let minM = Infinity
+  let maxM = -Infinity
+  for (const p of profile) {
+    minM = Math.min(minM, p.elevationM)
+    maxM = Math.max(maxM, p.elevationM)
+  }
+  if (!Number.isFinite(minM)) return
+  const span = Math.max(50, maxM - minM)
+  const stops = RELIEF_COLORS.flatMap((color, i) => [
+    minM + (span * i) / (RELIEF_COLORS.length - 1),
+    color,
+  ])
+  const dem = {
+    type: 'raster-dem' as const,
+    tiles: [TERRAIN_TILES],
+    tileSize: 256,
+    maxzoom: TERRAIN_MAX_ZOOM,
+    encoding: 'terrarium' as const,
+    attribution: TERRAIN_ATTRIBUTION,
+  }
+  m.addSource('relief-dem', dem)
+  // 地名や道路の文字より下に敷く
+  const beforeId = m.getStyle().layers?.find((l) => l.type === 'symbol')?.id
+  m.addLayer(
+    {
+      id: 'relief',
+      type: 'color-relief',
+      source: 'relief-dem',
+      paint: {
+        'color-relief-opacity': 0.55,
+        'color-relief-color': [
+          'interpolate',
+          ['linear'],
+          ['elevation'],
+          minM - span,
+          RELIEF_COLORS[0]!,
+          ...stops,
+          maxM + span,
+          RELIEF_COLORS[RELIEF_COLORS.length - 1]!,
+        ],
+      },
+    },
+    beforeId,
+  )
+  m.addLayer(
+    {
+      id: 'relief-hillshade',
+      type: 'hillshade',
+      source: 'relief-dem',
+      paint: { 'hillshade-exaggeration': 0.25 },
+    },
+    beforeId,
   )
 }
 

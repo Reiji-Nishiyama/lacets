@@ -20,15 +20,7 @@ export function StartPointPicker({
   const maxM = Math.max(0, Math.floor((course.distanceM - MIN_REMAINING_M) / STEP_M) * STEP_M)
   const p = course.positionAt(value)
   return (
-    <section className="panel start-point" data-testid="start-point">
-      <div className="panel-header">
-        <h3>{t('start.heading')}</h3>
-        {value > 0 && (
-          <button type="button" className="button-subtle" onClick={() => onChange(0)}>
-            {t('start.reset')}
-          </button>
-        )}
-      </div>
+    <div className="start-point" data-testid="start-point">
       <input
         type="range"
         aria-label={t('start.heading')}
@@ -38,17 +30,23 @@ export function StartPointPicker({
         value={Math.min(value, maxM)}
         onChange={(e) => onChange(Number(e.target.value))}
       />
-      <p data-testid="start-point-value">
-        {value > 0
-          ? t('start.value', {
-              km: formatKm(value),
-              elevation: formatMeters(p.elevationM),
-              grade: formatGradePct(p.grade),
-              remaining: formatKm(course.distanceM - value),
-            })
-          : t('start.fromBeginning')}
-      </p>
-      <p className="hint">{t('start.hint')}</p>
-    </section>
+      <div className="start-point-row">
+        <p data-testid="start-point-value">
+          {value > 0
+            ? t('start.value', {
+                km: formatKm(value),
+                elevation: formatMeters(p.elevationM),
+                grade: formatGradePct(p.grade),
+                remaining: formatKm(course.distanceM - value),
+              })
+            : t('start.fromBeginning')}
+        </p>
+        {value > 0 && (
+          <button type="button" className="button-subtle" onClick={() => onChange(0)}>
+            {t('start.reset')}
+          </button>
+        )}
+      </div>
+    </div>
   )
 }

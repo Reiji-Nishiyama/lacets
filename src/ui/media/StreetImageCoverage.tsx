@@ -24,35 +24,32 @@ export function StreetImageCoverage({ route }: { route: RouteVariant }) {
   const disabled = !media.panoramaxEnabled && !media.mapillaryToken.trim()
   const provider = (p: StreetImageProvider) => t(`visual.provider.${p}`)
 
-  return (
-    <section className="panel street-coverage" data-testid="street-coverage">
-      <h3>{t('streetImages.heading')}</h3>
-      {disabled ? (
-        <p className="hint">{t('streetImages.disabled')}</p>
-      ) : !state || state.status === 'loading' ? (
-        <p className="hint">{t('streetImages.loading')}</p>
-      ) : state.index.length === 0 ? (
-        <p className="hint">{t('streetImages.none')}</p>
-      ) : (
-        <p>
-          {t('streetImages.coverage', {
+  const errors = state?.errors.map((e, i) => (
+    <p key={i} className="notice notice-warn">
+      {e.kind === 'auth'
+        ? t('streetImages.error.auth', { provider: provider(e.provider) })
+        : t('streetImages.error.network', { provider: provider(e.provider), message: e.message })}
+    </p>
+  ))
+  const text = disabled
+    ? t('streetImages.pillDisabled')
+    : !state || state.status === 'loading'
+      ? t('streetImages.loading')
+      : state.index.length === 0
+        ? t('streetImages.pillNone')
+        : t('streetImages.pill', {
             coverage: formatPercent(state.coverageRatio),
             counts: (Object.entries(state.counts) as [StreetImageProvider, number][])
               .map(([p, count]) => t('streetImages.count', { provider: provider(p), count }))
               .join('、'),
-          })}
-        </p>
-      )}
-      {state?.errors.map((e, i) => (
-        <p key={i} className="notice notice-warn">
-          {e.kind === 'auth'
-            ? t('streetImages.error.auth', { provider: provider(e.provider) })
-            : t('streetImages.error.network', {
-                provider: provider(e.provider),
-                message: e.message,
-              })}
-        </p>
-      ))}
-    </section>
+          })
+
+  return (
+    <>
+      <span className="map-pill" data-testid="street-coverage">
+        {text}
+      </span>
+      {errors && errors.length > 0 && <div className="map-errors">{errors}</div>}
+    </>
   )
 }

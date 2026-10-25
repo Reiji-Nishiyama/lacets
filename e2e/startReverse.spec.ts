@@ -19,7 +19,7 @@ test('逆方向にすると獲得標高と下りが入れ替わり、そのま�
   await expect(page.getByTestId('stat-distance')).toHaveText('13.8')
 
   await page.getByRole('button', { name: 'トレーナーに接続' }).click()
-  await page.getByRole('button', { name: '走行を開始' }).click()
+  await page.getByRole('button', { name: '走りはじめる' }).click()
   // 逆方向の始点は下り
   await expect(page.getByTestId('ride-grade')).toHaveText(/^-/)
   await page.getByRole('button', { name: '終了' }).click()
@@ -35,7 +35,7 @@ test('ルートの途中の地点から走り始められる（#5）', async ({ 
   await expect(page.getByTestId('profile-start-marker')).toBeAttached()
 
   await page.getByRole('button', { name: 'トレーナーに接続' }).click()
-  await page.getByRole('button', { name: '走行を開始' }).click()
+  await page.getByRole('button', { name: '走りはじめる' }).click()
   await expect(page.getByTestId('ride-status')).toHaveText('走行中')
   // 距離は走った距離（0 から）、残りは開始地点から
   await expect(page.getByTestId('ride-distance')).toHaveText(/^0\.0/)
