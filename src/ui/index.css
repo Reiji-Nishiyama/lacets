@@ -1465,6 +1465,23 @@ button:disabled {
   line-height: 1.2;
 }
 
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: var(--radius-pill);
+  background: rgb(255 255 255 / 80%);
+  color: var(--ink);
+}
+
+.icon-button:hover:not(:disabled) {
+  background: var(--paper);
+}
+
 .route-name-row {
   display: flex;
   align-items: center;
