@@ -1,5 +1,5 @@
 import type { ProfilePoint } from '../course/types.ts'
-import { projectOntoRoute } from '../ghost/project.ts'
+import { buildRouteGrid } from '../course/routeGrid.ts'
 
 export type StreetImageProvider = 'panoramax' | 'mapillary'
 
@@ -48,7 +48,8 @@ export function angleDiffDeg(a: number, b: number): number {
 /**
  * 画像をルート上の距離に並べる（docs/02 §9）。ルートから離れた画像と、
  * 進行方向を向いていない平面画像（逆向きの撮影など）を除く。パノラマは向きを問わない。
- * 射影はゴーストと同じ処理を使う（画像は位置の順に並べて探索窓をルートに沿わせる）。
+ * 画像は撮影順ではないので 1 枚ずつルート全域から最寄りを探す。画像が数千枚になっても
+ * 固まらないよう、ルートの区間を格子に振り分けて近くだけを調べる（routeGrid.ts）。
  */
 export function indexImagesAlongRoute(
   profile: readonly ProfilePoint[],
@@ -58,13 +59,9 @@ export function indexImagesAlongRoute(
 ): RouteImage[] {
   const opts = { ...DEFAULT_IMAGE_INDEX, ...options }
   const out: RouteImage[] = []
+  const grid = buildRouteGrid(profile)
   for (const image of images) {
-    // 1 枚ずつ全域から最寄りを探す（画像は撮影順ではないので探索窓は使わない）
-    const { points } = projectOntoRoute(profile, [{ lat: image.lat, lon: image.lon, timeS: 0 }], {
-      maxOffsetM: opts.maxOffsetM,
-      initialWindowM: Infinity,
-    })
-    const hit = points[0]
+    const hit = grid.nearest(image.lat, image.lon, opts.maxOffsetM)
     if (!hit) continue
     if (!image.isPano) {
       if (image.azimuthDeg === null) continue
