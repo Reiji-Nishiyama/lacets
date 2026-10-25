@@ -2,37 +2,44 @@
 
 <p><img src="docs/brand/lacets-badge-rider.svg" width="120" alt=""> <img src="docs/brand/lacets-wordmark.svg" width="300" alt="Lacets"></p>
 
-実在のルートを、スマートトレーナー上で「実際に走っているかのように」再現するインドアサイクリング Web アプリ。
-設計・計画は [`CLAUDE.md`](CLAUDE.md) と [`docs/`](docs/) を参照。
+**行ってみたい峠を、部屋のスマートトレーナーで。**
 
-## 開発環境
+Lacets（ラセ）は、ラルプデュエズのつづら折りや富士ヒルのような実在のルートを、スマートトレーナーの上で「実際に走っているかのように」再現するインドアサイクリング Web アプリです。名前はラルプデュエズの 21 のつづら折り（les lacets）から。
 
-- Node.js 24（`.nvmrc`。Vite 8 は Node 20.19+ / 22.12+ が必要）
+![ルートの事前確認画面。標高で塗り分けた勾配図と地図、走りはじめるボタン](docs/images/preview.png)
 
-```sh
-nvm use
-npm ci
-npm run dev          # 開発サーバー（?sim=1 でシミュレータトレーナー ※M1 で実装）
-npm test             # ユニットテスト（Vitest）
-npm run e2e          # E2E テスト（Playwright）
-npm run lint         # ESLint + Prettier チェック
-npm run typecheck
-npm run format       # Prettier で整形
-```
+## できること
 
-E2E では WebGL を無効にしている（GPU のない環境で地図の描画がページを固めるほど重いため）。地図・3D 地形の見た目は実機で確認する。外部の路上画像 API は `e2e/fixtures.ts` でモックしている。
+- **いつものルートをそのまま走る**：Strava などから書き出した GPX / TCX / FIT を取り込むだけ。途中から走り始めたり、逆方向に走ったりもできます
+- **坂がちゃんと重くなる**：ルートの勾配をトレーナーの負荷として再現します（SIM モード）。速度はトレーナーの数字ではなく、体重・空気抵抗・路面からアプリが計算します
+- **景色の中を進む**：走っている位置の路上画像（Panoramax / Mapillary）、3D の地形、地図を切り替えて表示します
+- **先が見える**：ヘアピンの印で進み具合が、「この先 2 km」の勾配図で次の坂の強さがわかります
+- **去年の自分と競う**：実走の FIT や過去の走行をゴーストにして、差を秒で表示。走ったあとは登り・1 km ごとに比べられ、自己ベストもわかります
+- **記録を持ち出す**：走行を FIT で書き出し、Strava や Garmin Connect に手動でアップロードできます
 
-E2E の初回は `npx playwright install chromium` でブラウザを入れる。
-Linux / WSL で共有ライブラリ不足（`libgbm.so.1` 等）のエラーが出る場合は `sudo npx playwright install-deps chromium` を実行する。
+![走行中の画面。3D の地形の上に「この先 2 km」の勾配図と小さな地図、下にパワーなどの数字](docs/images/ride.png)
 
-### 環境変数（任意）
+<sub>画面は架空のサンプルルート。地図 © OpenFreeMap © OpenMapTiles © OpenStreetMap contributors、標高 Terrain Tiles（Mapzen ほか）</sub>
 
-| 変数                 | 内容                                                |
-| -------------------- | --------------------------------------------------- |
-| `VITE_MAP_STYLE_URL` | MapLibre の地図スタイル URL。未指定なら OpenFreeMap |
+## 必要なもの
 
-Mapillary のトークンと MapTiler のキーは、各自がアプリの設定画面で入力する（端末内にのみ保存）。
+|                    |                                                                                                |
+| ------------------ | ---------------------------------------------------------------------------------------------- |
+| スマートトレーナー | Bluetooth FTMS に対応したもの（Wahoo KICKR Core 2 で確認）。変速は自転車の実際の変速で行います |
+| 心拍計             | あれば（Bluetooth の心拍計）                                                                   |
+| パソコン           | Windows / Mac の **Chrome または Edge**                                                        |
+| iPad               | Web Bluetooth に対応したブラウザ **Bluefy**（iPad アプリ版は準備中）                           |
 
-### テスト用ルート
+Safari は Web Bluetooth に対応していないため使えません。Zwift Cog / Click などのバーチャルシフトには対応していません。
 
-`test/fixtures/synthetic-lacets.gpx` は架空の 21 ヘアピン・13.8 km の登り（`node scripts/generate-synthetic-lacets.mjs` で再生成）。`?sim=1` で取り込んで走行を試せる。
+## データの扱い
+
+- ルート・走行記録・設定は、**使っている端末の中（ブラウザ）にだけ**保存します。Lacets のサーバーには送りません
+- 端末を変えるときは、設定画面の「データの引っ越し」でバックアップを書き出して取り込みます
+- 路上画像や地図のキー（Mapillary・MapTiler）は、使う人がそれぞれ設定画面で入力します
+
+## いまの状況
+
+自転車仲間で試すベータ版の準備中です（[ロードマップ](docs/03-roadmap.md)）。
+
+開発に参加する方は [開発環境](docs/08-development.md) と [`CLAUDE.md`](CLAUDE.md)、設計は [`docs/`](docs/) を見てください。

@@ -92,3 +92,4 @@ docs/
 - `docs/05-ble-ftms.md` Bluetooth FTMS プロトコルメモ
 - `docs/06-calibration.md` 負荷のキャリブレーション（#7）の手順とデータの扱い
 - `docs/07-design.md` デザインの世界観・色・文字・部品・画面構成（UI を作るときは必ず従う）
+- `docs/08-development.md` 開発環境・テスト・環境変数・テスト用ルート
