@@ -46,3 +46,21 @@ export function getRoute(id: string, db: LacetsDb = defaultDb): Promise<StoredRo
 export function deleteRoute(id: string, db: LacetsDb = defaultDb): Promise<void> {
   return db.routes.delete(id)
 }
+
+/**
+ * ルート名を変える。このルートで走った記録の名前（履歴・ゴーストの一覧に出る）もそろえる。
+ * 空白だけの名前は受け付けない（false を返す）
+ */
+export async function renameRoute(
+  id: string,
+  name: string,
+  db: LacetsDb = defaultDb,
+): Promise<boolean> {
+  const trimmed = name.trim()
+  if (!trimmed) return false
+  await db.transaction('rw', db.routes, db.rides, async () => {
+    await db.routes.update(id, { name: trimmed })
+    await db.rides.where('routeId').equals(id).modify({ routeName: trimmed })
+  })
+  return true
+}

@@ -6,7 +6,13 @@ import { createDb, type LacetsDb } from './db.ts'
 import { sampleRide } from '../../test/helpers/recordedRide.ts'
 import { addReferenceFromFile, getReference, listReferences } from './referenceRepository.ts'
 import { getRide, listRides, saveRide } from './rideRepository.ts'
-import { addRouteFromFile, deleteRoute, getRoute, listRoutes } from './routeRepository.ts'
+import {
+  addRouteFromFile,
+  deleteRoute,
+  getRoute,
+  listRoutes,
+  renameRoute,
+} from './routeRepository.ts'
 import { loadRiderSettings, saveRiderSettings } from './settingsRepository.ts'
 
 let db: LacetsDb
@@ -45,6 +51,18 @@ describe('routeRepository', () => {
     const a = await addRouteFromFile('a.gpx', readFixture('route-rtept.gpx'), db)
     await deleteRoute(a.id, db)
     expect(await getRoute(a.id, db)).toBeUndefined()
+  })
+
+  it('名前を変えると、そのルートで走った記録の名前もそろう。空の名前は受け付けない', async () => {
+    const a = await addRouteFromFile('a.gpx', readFixture('route-rtept.gpx'), db)
+    await saveRide({ ...sampleRide(), id: 'r1', routeId: a.id, routeName: a.name }, db)
+    await saveRide({ ...sampleRide(), id: 'r2', routeId: 'other', routeName: 'ほか' }, db)
+    expect(await renameRoute(a.id, '  ヤビツ峠  ', db)).toBe(true)
+    expect((await getRoute(a.id, db))?.name).toBe('ヤビツ峠')
+    expect((await getRide('r1', db))?.routeName).toBe('ヤビツ峠')
+    expect((await getRide('r2', db))?.routeName).toBe('ほか')
+    expect(await renameRoute(a.id, '   ', db)).toBe(false)
+    expect((await getRoute(a.id, db))?.name).toBe('ヤビツ峠')
   })
 })
 

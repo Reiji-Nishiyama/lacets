@@ -27,5 +27,6 @@ export function routeVariant(route: StoredRoute, reversed: boolean): RouteVarian
     }
     cache.set(cacheKey, v)
   }
-  return v
+  // 名前は取り込み後に変えられる（覚えているのは形だけ）
+  return v.name === route.name ? v : { ...v, name: route.name }
 }
