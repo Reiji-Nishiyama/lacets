@@ -1,5 +1,5 @@
 import { Decoder, Stream } from '@garmin/fitsdk'
-import { expect, test } from './fixtures.ts'
+import { expect, readSavedSetting, test } from './fixtures.ts'
 import { readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 
@@ -77,11 +77,12 @@ test('ライダー設定を保存できる', async ({ page }) => {
   await page.getByRole('button', { name: '設定' }).click()
   await page.getByLabel('体重').fill('58')
   await page.getByLabel('ポジション').selectOption('climbing')
-  // 保存（IndexedDB）は非同期なので、反映されるまで再読み込みして確かめる
-  await expect(async () => {
-    await page.reload()
-    await page.getByRole('button', { name: '設定' }).click()
-    await expect(page.getByLabel('体重')).toHaveValue('58', { timeout: 3000 })
-    await expect(page.getByLabel('ポジション')).toHaveValue('climbing', { timeout: 3000 })
-  }).toPass({ timeout: 10_000 })
+  // 保存（IndexedDB）の完了を確かめてから再読み込みする
+  await expect
+    .poll(() => readSavedSetting(page, 'rider'))
+    .toMatchObject({ riderMassKg: 58, position: 'climbing' })
+  await page.reload()
+  await page.getByRole('button', { name: '設定' }).click()
+  await expect(page.getByLabel('体重')).toHaveValue('58')
+  await expect(page.getByLabel('ポジション')).toHaveValue('climbing')
 })

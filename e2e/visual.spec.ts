@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { importRoute } from '../src/domain/course/importRoute.ts'
-import { expect, test } from './fixtures.ts'
+import { expect, readSavedSetting, test } from './fixtures.ts'
 
 const fixturePath = fileURLToPath(new URL('../test/fixtures/synthetic-lacets.gpx', import.meta.url))
 const route = importRoute(new Uint8Array(readFileSync(fixturePath)), 'x')
@@ -70,17 +70,14 @@ test('Mapillary のトークンと MapTiler のキーを設定できる', async 
   await page.getByRole('button', { name: '設定' }).click()
   await page.getByLabel('Mapillary のアクセストークン').fill('MLY|test')
   await page.getByLabel('Panoramax の路上画像を使う（キー不要）').uncheck()
-  // 保存（IndexedDB）は非同期なので、反映されるまで再読み込みして確かめる
-  await expect(async () => {
-    await page.reload()
-    await page.getByRole('button', { name: '設定' }).click()
-    await expect(page.getByLabel('Mapillary のアクセストークン')).toHaveValue('MLY|test', {
-      timeout: 3000,
-    })
-    await expect(page.getByLabel('Panoramax の路上画像を使う（キー不要）')).not.toBeChecked({
-      timeout: 3000,
-    })
-  }).toPass({ timeout: 10_000 })
+  // 保存（IndexedDB）の完了を確かめてから再読み込みする
+  await expect
+    .poll(() => readSavedSetting(page, 'media'))
+    .toMatchObject({ mapillaryToken: 'MLY|test', panoramaxEnabled: false })
+  await page.reload()
+  await page.getByRole('button', { name: '設定' }).click()
+  await expect(page.getByLabel('Mapillary のアクセストークン')).toHaveValue('MLY|test')
+  await expect(page.getByLabel('Panoramax の路上画像を使う（キー不要）')).not.toBeChecked()
   await expect(page.getByLabel('Mapillary のアクセストークン')).toHaveAttribute('type', 'password')
   await expect(page.getByTestId('maptiler-usage')).toContainText(
     'この端末の今月の使用量（目安）: 0 / 100,000 リクエスト',
