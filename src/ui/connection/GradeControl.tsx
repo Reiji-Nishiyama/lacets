@@ -29,9 +29,9 @@ export function GradeControl() {
   const maxPct = gradeToPercent(range.maxGrade)
 
   return (
-    <section className="panel">
+    <section className="device-block">
       <div className="panel-header">
-        <h2>{t('grade.heading')}</h2>
+        <h3>{t('grade.heading')}</h3>
         <span className="grade-value" data-testid="grade-value">
           {gradeToPercent(grade).toFixed(1)}
           {t('unit.percent')}

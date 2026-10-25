@@ -11,13 +11,13 @@ export function TrainerPanel() {
   const heartRateBpm = useDeviceStore(selectHeartRateBpm)
 
   return (
-    <section className="panel">
+    <section className="device-block device-trainer">
       <div className="panel-header">
-        <h2>{t('trainer.heading')}</h2>
+        <h3>{t('trainer.heading')}</h3>
         <ConnectionBadge state={state} testId="trainer-state" />
       </div>
       {name && <p className="device-name">{name}</p>}
-      <div className="metrics">
+      <div className="metrics device-metrics">
         <Metric
           label={t('metric.power')}
           value={data?.powerW}
@@ -42,12 +42,17 @@ export function TrainerPanel() {
       )}
       <div className="actions">
         {state === 'disconnected' ? (
-          <button type="button" onClick={() => void deviceActions.connectTrainer()}>
+          <button
+            type="button"
+            className="button-primary button-connect"
+            onClick={() => void deviceActions.connectTrainer()}
+          >
             {t('trainer.connect')}
           </button>
         ) : (
           <button
             type="button"
+            className="button-subtle"
             disabled={state === 'connecting'}
             onClick={() => void deviceActions.disconnectTrainer()}
           >

@@ -14,9 +14,9 @@ export function SimulatorPanel({ trainer }: { trainer: SimulatedTrainer }) {
   }
 
   return (
-    <section className="panel">
+    <section className="device-block">
       <div className="panel-header">
-        <h2>{t('simulator.heading')}</h2>
+        <h3>{t('simulator.heading')}</h3>
       </div>
       <label className="field">
         <span>{t('simulator.mode')}</span>
