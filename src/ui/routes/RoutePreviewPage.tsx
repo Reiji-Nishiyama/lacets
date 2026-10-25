@@ -1,16 +1,17 @@
 import { useLiveQuery } from 'dexie-react-hooks'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Course } from '../../domain/course/Course.ts'
 import { progressMarkers } from '../../domain/course/progressMarkers.ts'
 import type { GhostRef } from '../../recording/types.ts'
 import { deviceActions, useDeviceStore } from '../../store/deviceStore.ts'
-import { loadGhost } from '../../store/ghosts.ts'
+import { listGhostOptions, loadGhost, type GhostOption } from '../../store/ghosts.ts'
 import { rideActions } from '../../store/rideStore.ts'
 import { getRoute } from '../../store/routeRepository.ts'
 import { routeVariant } from '../../store/routeVariant.ts'
 import { trainerMassRatio, useSettingsStore } from '../../store/settingsStore.ts'
 import { ElevationProfile } from '../common/ElevationProfile.tsx'
 import { RouteMap } from '../common/RouteMap.tsx'
+import { formatDuration } from '../../domain/units.ts'
 import { formatGradePct, formatKm, formatMeters } from '../format.ts'
 import { t } from '../i18n/index.ts'
 import { StreetImageCoverage } from '../media/StreetImageCoverage.tsx'
@@ -38,9 +39,22 @@ export function RoutePreviewPage({ routeId }: { routeId: string }) {
   // undefined = 未選択（ルートに紐付いた実走データがあればそれを既定にする）
   const [ghostRef, setGhostRef] = useState<GhostRef | null | undefined>(undefined)
   const [starting, setStarting] = useState(false)
+  const [ghostOptions, setGhostOptions] = useState<GhostOption[] | null>(null)
+  const [ghostReload, setGhostReload] = useState(0)
   const variant = useMemo(() => (route ? routeVariant(route, reversed) : null), [route, reversed])
   const course = useMemo(() => (variant ? new Course(variant.profile) : null), [variant])
   const markers = useMemo(() => (variant ? progressMarkers(variant.profile) : null), [variant])
+
+  useEffect(() => {
+    if (!variant) return
+    let cancelled = false
+    void listGhostOptions(variant).then((options) => {
+      if (!cancelled) setGhostOptions(options)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [variant, ghostReload])
 
   if (route === undefined) return null
   if (!variant || !course) return <p className="notice notice-error">{t('preview.notFound')}</p>
@@ -117,6 +131,26 @@ export function RoutePreviewPage({ routeId }: { routeId: string }) {
               <strong data-testid="stat-max-grade">{formatGradePct(stats.maxGrade)}</strong>
               {t('unit.percent')}
             </span>
+            {ghostOptions
+              ?.filter((o) => o.isBest && o.fullTimeS !== null)
+              .map((o) => {
+                const selected =
+                  effectiveGhost?.kind === o.ref.kind && effectiveGhost.id === o.ref.id
+                return (
+                  <button
+                    key={o.ref.kind}
+                    type="button"
+                    className={`chip chip-best${selected ? ' chip-selected' : ''}`}
+                    aria-pressed={selected}
+                    title={t('best.useAsGhost')}
+                    data-testid={o.ref.kind === 'ride' ? 'best-ride' : 'best-reference'}
+                    onClick={() => setGhostRef(selected ? null : o.ref)}
+                  >
+                    ★ {t(o.ref.kind === 'ride' ? 'best.ride' : 'best.reference')}{' '}
+                    <strong>{formatDuration(o.fullTimeS!)}</strong>
+                  </button>
+                )
+              })}
           </div>
 
           {markers && <ProgressMarkerRow markers={markers} distanceM={0} preview />}
@@ -150,7 +184,12 @@ export function RoutePreviewPage({ routeId }: { routeId: string }) {
               />
               {t('preview.reverse')}
             </label>
-            <GhostPicker route={variant} value={effectiveGhost} onChange={setGhostRef} />
+            <GhostPicker
+              options={ghostOptions}
+              value={effectiveGhost}
+              onChange={setGhostRef}
+              onAdded={() => setGhostReload((n) => n + 1)}
+            />
           </div>
         </div>
 

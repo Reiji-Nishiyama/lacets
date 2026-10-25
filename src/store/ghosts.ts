@@ -1,5 +1,6 @@
 import type { ProfilePoint } from '../domain/course/types.ts'
 import { ghostFromRecordedRide, ghostFromReference } from '../domain/ghost/ghostSources.ts'
+import { bestIndex, fullRouteTimeS } from '../domain/ghost/personalBest.ts'
 import type { TimedTrack } from '../domain/ghost/TimedTrack.ts'
 import type { GhostRef } from '../recording/types.ts'
 import type { RouteVariant } from './routeVariant.ts'
@@ -12,6 +13,10 @@ export interface GhostOption {
   recordedAtMs: number
   /** ルートのうちゴーストが走っている割合（0〜1） */
   coverageRatio: number
+  /** スタートからゴールまで走った記録ならそのタイム [s]。途中からの記録は null */
+  fullTimeS: number | null
+  /** 自己ベスト（Lacets の走行の中で）または実走ベスト（実走データの中で） */
+  isBest: boolean
 }
 
 export interface LoadedGhost {
@@ -43,9 +48,14 @@ function projectCached(
   return g
 }
 
-/** ルートで使えるゴースト: 同じルート・同じ向きの過去の走行と、ルートに重なる実走データ */
+/**
+ * ルートで使えるゴースト: 同じルート・同じ向きの過去の走行と、ルートに重なる実走データ。
+ * 走り切った記録にはタイムを付け、Lacets の走行・実走データそれぞれのいちばん速い記録に
+ * 印を付けて先頭に並べる
+ */
 export async function listGhostOptions(route: RouteVariant): Promise<GhostOption[]> {
   const [rides, refs] = await Promise.all([listRides(), listReferences()])
+  const routeM = route.stats.distanceM
   const rideOptions: GhostOption[] = rides
     .filter(
       (r) => r.routeId === route.id && !!r.reversed === route.reversed && r.samples.length > 0,
@@ -54,10 +64,12 @@ export async function listGhostOptions(route: RouteVariant): Promise<GhostOption
       ref: { kind: 'ride', id: r.id },
       name: r.routeName,
       recordedAtMs: r.startedAtMs,
-      coverageRatio: Math.min(1, r.stats.distanceM / route.stats.distanceM),
+      coverageRatio: Math.min(1, r.stats.distanceM / routeM),
+      fullTimeS: fullRouteTimeS(ghostFromRecordedRide(r.samples, r.startDistanceM ?? 0), routeM),
+      isBest: false,
     }))
   const refOptions: GhostOption[] = refs.flatMap((ref) => {
-    const { coverageRatio } = projectCached(route.variantKey, route.profile, ref)
+    const { coverageRatio, track } = projectCached(route.variantKey, route.profile, ref)
     if (coverageRatio < MIN_COVERAGE) return []
     return [
       {
@@ -65,10 +77,19 @@ export async function listGhostOptions(route: RouteVariant): Promise<GhostOption
         name: ref.name,
         recordedAtMs: ref.recordedAtMs,
         coverageRatio,
+        fullTimeS: fullRouteTimeS(track, routeM),
+        isBest: false,
       },
     ]
   })
-  return [...refOptions, ...rideOptions]
+  return [...markBest(refOptions), ...markBest(rideOptions)]
+}
+
+function markBest(options: GhostOption[]): GhostOption[] {
+  const i = bestIndex(options.map((o) => o.fullTimeS))
+  if (i < 0) return options
+  const best = { ...options[i]!, isBest: true }
+  return [best, ...options.filter((_, j) => j !== i)]
 }
 
 export async function loadGhost(

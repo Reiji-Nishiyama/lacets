@@ -1,45 +1,39 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { RouteParseError } from '../../domain/course/parsers/RouteParseError.ts'
 import type { GhostRef } from '../../recording/types.ts'
-import type { RouteVariant } from '../../store/routeVariant.ts'
-import { listGhostOptions, type GhostOption } from '../../store/ghosts.ts'
+import type { GhostOption } from '../../store/ghosts.ts'
 import { addReferenceFromFile } from '../../store/referenceRepository.ts'
+import { formatDuration } from '../../domain/units.ts'
 import { formatDateTime, formatPercent } from '../format.ts'
 import { t } from '../i18n/index.ts'
 
 const keyOf = (ref: GhostRef | null) => (ref ? `${ref.kind}:${ref.id}` : '')
 
-/** 走行前にゴーストを選ぶ。実走データの追加もここから */
+/**
+ * 走行前にゴーストを選ぶ。実走データの追加もここから。走り切った記録にはタイムを、
+ * 自己ベスト・実走ベストには ★ を付ける（選択肢は事前確認画面が読み込む）
+ */
 export function GhostPicker({
-  route,
+  options,
   value,
   onChange,
+  onAdded,
 }: {
-  route: RouteVariant
+  options: GhostOption[] | null
   value: GhostRef | null
   onChange: (ref: GhostRef | null) => void
+  /** 実走データを追加したとき（選択肢を読み直す） */
+  onAdded: () => void
 }) {
-  const [options, setOptions] = useState<GhostOption[] | null>(null)
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null)
-  const [reload, setReload] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    let cancelled = false
-    void listGhostOptions(route).then((opts) => {
-      if (!cancelled) setOptions(opts)
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [route, reload])
 
   const addFile = async (file: File) => {
     setMessage(null)
     try {
       const ref = await addReferenceFromFile(file.name, new Uint8Array(await file.arrayBuffer()))
       setMessage({ kind: 'ok', text: t('ghost.added', { name: ref.name }) })
-      setReload((n) => n + 1)
+      onAdded()
       onChange({ kind: 'reference', id: ref.id })
     } catch (e) {
       console.warn(e)
@@ -52,14 +46,26 @@ export function GhostPicker({
   }
 
   const selected = options?.find((o) => keyOf(o.ref) === keyOf(value))
-  const label = (o: GhostOption) =>
-    o.ref.kind === 'ride'
-      ? t('ghost.optionRide', { date: formatDateTime(o.recordedAtMs) })
-      : t('ghost.optionReference', {
-          name: o.name,
-          date: formatDateTime(o.recordedAtMs),
-          coverage: formatPercent(o.coverageRatio),
-        })
+  const label = (o: GhostOption) => {
+    const date = formatDateTime(o.recordedAtMs)
+    const time = o.fullTimeS === null ? null : formatDuration(o.fullTimeS)
+    if (o.ref.kind === 'ride') {
+      if (time === null) return t('ghost.optionRide', { date })
+      return t(o.isBest ? 'ghost.optionRideBest' : 'ghost.optionRideTime', { date, time })
+    }
+    if (time === null) {
+      return t('ghost.optionReference', {
+        name: o.name,
+        date,
+        coverage: formatPercent(o.coverageRatio),
+      })
+    }
+    return t(o.isBest ? 'ghost.optionReferenceBest' : 'ghost.optionReferenceTime', {
+      name: o.name,
+      date,
+      time,
+    })
+  }
 
   return (
     <div className="ghost-picker">
