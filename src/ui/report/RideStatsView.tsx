@@ -1,7 +1,7 @@
 import { formatDuration } from '../../domain/units.ts'
 import type { RecordedRide } from '../../recording/types.ts'
 import { Stat } from '../common/Stat.tsx'
-import { formatInt, formatKm, formatMeters } from '../format.ts'
+import { formatInt, formatKm, formatKmh, formatMeters } from '../format.ts'
 import { t } from '../i18n/index.ts'
 
 export function RideStatsView({ ride }: { ride: RecordedRide }) {
@@ -19,6 +19,11 @@ export function RideStatsView({ ride }: { ride: RecordedRide }) {
         label={t('summary.averagePower')}
         value={formatInt(stats.averagePowerW)}
         unit={t('unit.watt')}
+      />
+      <Stat
+        label={t('summary.averageSpeed')}
+        value={formatKmh(stats.averageSpeedMps)}
+        unit={t('unit.kmh')}
       />
       <Stat label={t('summary.ascent')} value={formatMeters(stats.ascentM)} unit={t('unit.m')} />
     </div>

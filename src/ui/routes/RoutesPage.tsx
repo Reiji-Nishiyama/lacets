@@ -1,6 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
 import { RouteParseError } from '../../domain/course/parsers/RouteParseError.ts'
+import { averageGrade } from '../../domain/course/profile.ts'
 import { progressMarkers } from '../../domain/course/progressMarkers.ts'
 import type { StoredRoute } from '../../store/db.ts'
 import { addRouteFromFile, deleteRoute, listRoutes } from '../../store/routeRepository.ts'
@@ -117,6 +118,10 @@ function RouteCard({
           </span>
           <span className="chip chip-small">
             {t('chip.ascent')} <strong>{formatMeters(stats.ascentM)}</strong> {t('unit.m')}
+          </span>
+          <span className="chip chip-small">
+            {t('chip.averageGrade')} <strong>{formatGradePct(averageGrade(profile))}</strong>
+            {t('unit.percent')}
           </span>
           <span className="chip chip-small">
             {t('chip.maxGrade')} <strong>{formatGradePct(stats.maxGrade)}</strong>

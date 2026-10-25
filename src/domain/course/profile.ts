@@ -203,3 +203,14 @@ function computeStats(profile: ProfilePoint[]): CourseStats {
     minGrade,
   }
 }
+
+/**
+ * 平均勾配（小数）: 始点と終点の標高差 ÷ 距離。Strava の区間と同じ定義なので、
+ * 周回コースや往復ではほぼ 0 になる
+ */
+export function averageGrade(profile: readonly ProfilePoint[]): number {
+  const first = profile[0]
+  const last = profile[profile.length - 1]
+  if (!first || !last || last.distanceM <= first.distanceM) return 0
+  return (last.elevationM - first.elevationM) / (last.distanceM - first.distanceM)
+}
