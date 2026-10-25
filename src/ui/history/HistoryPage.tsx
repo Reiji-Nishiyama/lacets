@@ -2,7 +2,9 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useMemo, useState } from 'react'
 import { formatDuration } from '../../domain/units.ts'
 import type { RecordedRide } from '../../recording/types.ts'
+import { personalBestRideIds } from '../../store/personalBests.ts'
 import { listRides } from '../../store/rideRepository.ts'
+import { listRoutes } from '../../store/routeRepository.ts'
 import { formatInt, formatKm, formatMeters, formatMonthDay, formatYearTime } from '../format.ts'
 import { t } from '../i18n/index.ts'
 import { useNavigation } from '../navigation.ts'
@@ -22,6 +24,7 @@ import { RideCalendar } from './RideCalendar.tsx'
  */
 export function HistoryPage() {
   const rides = useLiveQuery(() => listRides(), [])
+  const routes = useLiveQuery(() => listRoutes(), [])
   const navigate = useNavigation((s) => s.navigate)
   // null = まだ選んでいない（いちばん新しい走行の月を出す）
   const [pickedMonth, setPickedMonth] = useState<YearMonth | null>(null)
@@ -32,6 +35,7 @@ export function HistoryPage() {
 
   const latestMs = rides?.reduce((m, r) => Math.max(m, r.startedAtMs), 0) || openedAtMs
   const month = pickedMonth ?? yearMonthOf(latestMs)
+  const bestIds = useMemo(() => personalBestRideIds(rides ?? [], routes ?? []), [rides, routes])
   const counts = useMemo(() => countByDay(rides?.map((r) => r.startedAtMs) ?? []), [rides])
   const inMonth = (rides ?? []).filter((r) => sameMonth(r.startedAtMs, month))
   const shown = selectedDay ? inMonth.filter((r) => dayKey(r.startedAtMs) === selectedDay) : inMonth
@@ -130,6 +134,14 @@ export function HistoryPage() {
                           {t('summary.averagePower')}{' '}
                           <strong>{formatInt(r.stats.averagePowerW)}</strong> {t('unit.watt')}
                         </span>
+                        {bestIds.has(r.id) && (
+                          <span
+                            className="chip chip-small chip-best-mark"
+                            data-testid="history-best"
+                          >
+                            ★ {t('best.historyMark')}
+                          </span>
+                        )}
                         {r.ghost && (
                           <span className="chip chip-small chip-ghost">
                             {t('report.withGhost', { name: r.ghost.name })}

@@ -40,6 +40,19 @@ describe('listGhostOptions / loadGhost', () => {
     expect(options[0]!.coverageRatio).toBeGreaterThan(0.95)
   })
 
+  it('走り切った実走データにはタイムと実走ベストの印。途中までの過去の走行はタイムなし', async () => {
+    const { route } = await setup()
+    // sampleRide は 450 m（13.8 km のルートの途中まで）
+    await saveRide({ ...sampleRide(), routeId: route.id })
+    const options = await listGhostOptions(route)
+    const reference = options.find((o) => o.ref.kind === 'reference')!
+    expect(reference.fullTimeS).toBeGreaterThan(0)
+    expect(reference.isBest).toBe(true)
+    const ride = options.find((o) => o.ref.kind === 'ride')!
+    expect(ride.fullTimeS).toBeNull()
+    expect(ride.isBest).toBe(false)
+  })
+
   it('実走データを射影したゴーストを読み込む', async () => {
     const { route, reference } = await setup()
     const ghost = await loadGhost({ kind: 'reference', id: reference.id }, route)
