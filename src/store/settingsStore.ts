@@ -85,6 +85,13 @@ export async function loadSettings(): Promise<void> {
   }
 }
 
+/** バックアップを取り込んだあとなど、保存済みの設定で画面の設定をすべて置き換える */
+export async function reloadSettings(): Promise<void> {
+  await settingsSaved()
+  changedBeforeLoad.clear()
+  await loadSettings()
+}
+
 export function updateRiderSettings(patch: Partial<RiderSettings>): void {
   useSettingsStore.setState((s) => ({ rider: { ...s.rider, ...patch } }))
   persist('rider')
