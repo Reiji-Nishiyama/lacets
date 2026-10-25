@@ -1,9 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#e3f1f8"/>
-  <circle cx="356" cy="150" r="46" fill="#f4b63c"/>
-  <path d="M0 512 L0 360 L150 250 L260 330 L380 240 L512 330 L512 512 Z" fill="#8cc3b0"/>
-  <path d="M176 410 L320 380 L184 344 L328 312 L192 278 L336 246 L268 222"
-        fill="none" stroke="#ffffff" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M176 410 L320 380 L184 344 L328 312 L192 278 L336 246 L268 222"
-        fill="none" stroke="#2c5f4f" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Lacets"><defs><clipPath id="lacets-badge-clip"><circle cx="100" cy="100" r="96"/></clipPath></defs><g clip-path="url(#lacets-badge-clip)"><rect width="200" height="200" fill="#CDE8F3"/><circle cx="146" cy="56" r="18" fill="#F4B63C"/><path d="M0 132 L52 92 L88 116 L140 74 L200 122 L200 200 L0 200 Z" fill="#A9D3E3"/><path d="M-20 210 L100 62 L220 210 Z" fill="#8CC3B0" stroke="#8CC3B0" stroke-width="16" stroke-linejoin="round"/><polyline points="0,172 160,160 86,138 130,120 96,103 108,90 100,78" fill="none" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></g></svg>

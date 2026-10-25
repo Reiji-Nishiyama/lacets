@@ -9,7 +9,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       workbox: {
         // 書体（unicode-range ごとに分割された woff2）は使った分だけ端末に残し、オフラインでも表示できるようにする
         runtimeCaching: [
@@ -33,9 +33,12 @@ export default defineConfig({
         display: 'standalone',
         orientation: 'any',
         start_url: '/',
+        // ロゴは src/ui/brand/logo.ts（npm run brand で書き出す）。maskable は風景を全面に描いた四角
         icons: [
           { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
-          { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' },
+          { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
     }),

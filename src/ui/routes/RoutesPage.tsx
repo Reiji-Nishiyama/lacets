@@ -8,6 +8,7 @@ import { addRouteFromFile, deleteRoute, listRoutes } from '../../store/routeRepo
 import { formatGradePct, formatKm, formatMeters } from '../format.ts'
 import { t } from '../i18n/index.ts'
 import { useNavigation } from '../navigation.ts'
+import { LogoBadge } from '../brand/Logo.tsx'
 import { RouteDropZone } from './RouteDropZone.tsx'
 import { RouteThumbnail } from './RouteThumbnail.tsx'
 
@@ -84,7 +85,12 @@ export function RoutesPage() {
           />
         ))}
       </ul>
-      {routes && routes.length === 0 && <p className="hint">{t('routes.empty')}</p>}
+      {routes && routes.length === 0 && (
+        <div className="welcome">
+          <LogoBadge rider className="welcome-badge" />
+          <p>{t('routes.empty')}</p>
+        </div>
+      )}
     </section>
   )
 }
