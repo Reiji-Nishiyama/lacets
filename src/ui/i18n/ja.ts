@@ -230,6 +230,22 @@ export const ja = {
   'settings.maptilerUsageHigh': '今月の目安が無料枠の {percent}% に達しています。',
   'visual.maptilerFallback':
     'MapTiler の衛星画像を使えませんでした（キーの誤りか、今月の無料枠の上限）。通常の地図に切り替えました。',
+  'backup.heading': 'データの引っ越し',
+  'backup.hint':
+    'ルート・走行記録・実走データ・設定を 1 つのファイルにまとめ、別の端末やブラウザに移せます。データはこの端末の中にしかないので、ときどき書き出しておくと安心です。Mapillary のトークンと MapTiler のキーは含めません。',
+  'backup.export': 'バックアップを書き出す',
+  'backup.exported': 'バックアップを書き出しました（ルート {routes} 件、走行 {rides} 件）',
+  'backup.exportFailed': 'バックアップを書き出せませんでした: {detail}',
+  'backup.import': 'バックアップを取り込む',
+  'backup.importConfirm':
+    'ルート {routes} 件、走行 {rides} 件、実走データ {referenceRides} 件と設定を取り込みます。同じものは置き換え、この端末にだけあるものは残します。よろしいですか？',
+  'backup.imported':
+    '取り込みました（ルート {routes} 件、走行 {rides} 件、実走データ {referenceRides} 件）',
+  'backup.error.notBackup': 'Lacets のバックアップファイルではありません',
+  'backup.error.newerVersion':
+    '新しい版の Lacets で作ったバックアップです。Lacets を更新してから取り込んでください',
+  'backup.error.broken': 'ファイルが壊れているため取り込めませんでした',
+  'backup.error.unknown': '取り込めませんでした: {detail}',
   'settings.keysLocal':
     'トークンやキーはこの端末の中にだけ保存し、Lacets のサーバーには送りません。',
   'settings.show': '表示',

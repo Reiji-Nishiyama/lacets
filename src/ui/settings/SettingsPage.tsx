@@ -6,6 +6,7 @@ import {
 } from '../../domain/rider.ts'
 import { updateRiderSettings, useSettingsStore } from '../../store/settingsStore.ts'
 import { t } from '../i18n/index.ts'
+import { BackupPanel } from './BackupPanel.tsx'
 import { MediaSettingsPanel } from './MediaSettingsPanel.tsx'
 import { TrainerSettingsPanel } from './TrainerSettingsPanel.tsx'
 
@@ -154,6 +155,7 @@ export function SettingsPage() {
         </section>
         <TrainerSettingsPanel />
         <MediaSettingsPanel />
+        <BackupPanel />
       </div>
     </section>
   )
