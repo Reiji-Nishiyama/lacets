@@ -16,7 +16,7 @@ async function importAndOpen(page: Page) {
 }
 
 async function rideAndFinish(page: Page, seconds: number) {
-  await page.getByRole('button', { name: '走行を開始' }).click()
+  await page.getByRole('button', { name: '走りはじめる' }).click()
   await expect(page.getByTestId('ride-status')).toHaveText('走行中')
   await page.waitForTimeout(seconds * 1000)
   await page.getByRole('button', { name: '終了' }).click()
@@ -38,7 +38,7 @@ test('前年の実走データをゴーストにして走り、区間比較を�
   await expect(page.getByText('2025 実走 を追加しました')).toBeVisible()
   await expect(page.getByLabel('ゴースト')).toHaveValue(/^reference:/)
 
-  await page.getByRole('button', { name: '走行を開始' }).click()
+  await page.getByRole('button', { name: '走りはじめる' }).click()
   // ゴーストの開始地点を過ぎると差が出る
   await expect(page.getByTestId('ride-ghost-delta')).not.toHaveText('—', { timeout: 15_000 })
   await expect(page.getByTestId('minimap-ghost')).toBeAttached()
@@ -61,7 +61,7 @@ test('同じルートの過去の走行をゴーストにでき、履歴から�
   const picker = page.getByLabel('ゴースト')
   await picker.selectOption({ index: 1 })
   await expect(picker).toHaveValue(/^ride:/)
-  await page.getByRole('button', { name: '走行を開始' }).click()
+  await page.getByRole('button', { name: '走りはじめる' }).click()
   await expect(page.getByTestId('ride-ghost-delta')).not.toHaveText('—', { timeout: 5_000 })
   await page.waitForTimeout(2000)
   await page.getByRole('button', { name: '終了' }).click()

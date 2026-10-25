@@ -1,24 +1,20 @@
-import { useMemo } from 'react'
+import { useId, useMemo } from 'react'
 import type { ProfilePoint } from '../../domain/course/types.ts'
-import { formatKm } from '../format.ts'
+import { formatKm, formatMeters } from '../format.ts'
 import { t } from '../i18n/index.ts'
-import { gradeColor } from './gradeColor.ts'
+import { contourIntervalM, reliefColor } from './relief.ts'
 
 const WIDTH = 1000
 const HEIGHT = 240
-const PAD = { top: 24, right: 0, bottom: 0, left: 0 }
-/** 描画する列の数。長いルートでも描画が重くならないよう間引く */
-const MAX_COLUMNS = 400
+const PAD_TOP = 16
+/** 描く点の数の上限（長いルートでも軽く） */
+const MAX_POINTS = 600
 
-interface Column {
-  x0: number
-  x1: number
-  e0: number
-  e1: number
-  grade: number
-}
-
-/** 標高と勾配の SVG プロファイル。markerDistanceM に現在位置の線を引く */
+/**
+ * 勾配図（docs/07-design.md）。塗りを等高線の間隔ごとの標高の帯に分け、帯の境目に白い等高線を引く。
+ * 地図と同じ色の段なので、地図の色と勾配図の高さが対応する。
+ * startDistanceM より手前は淡くし、onSelectDistance があればクリックで地点を選べる
+ */
 export function ElevationProfile({
   profile,
   markerDistanceM,
@@ -28,20 +24,15 @@ export function ElevationProfile({
 }: {
   profile: readonly ProfilePoint[]
   markerDistanceM?: number
-  /** ゴーストの位置（点線で表示） */
   ghostDistanceM?: number
-  /** 走り始める地点（それより手前を暗くする） */
   startDistanceM?: number
-  /** クリックした地点の距離を返す（開始地点の選択） */
   onSelectDistance?: (distanceM: number) => void
 }) {
-  const { columns, minE, maxE, totalM } = useMemo(() => buildColumns(profile), [profile])
-  const plotW = WIDTH - PAD.left - PAD.right
-  const plotH = HEIGHT - PAD.top - PAD.bottom
-  const range = Math.max(10, maxE - minE)
-  const x = (d: number) => PAD.left + (d / totalM) * plotW
-  const y = (e: number) => PAD.top + plotH - ((e - minE) / range) * plotH
-  const baseY = PAD.top + plotH
+  const clipId = useId()
+  const g = useMemo(() => geometry(profile), [profile])
+  const x = (d: number) => (d / g.totalM) * WIDTH
+  const y = (e: number) =>
+    PAD_TOP + (HEIGHT - PAD_TOP) * (1 - (e - g.bottomM) / (g.topM - g.bottomM))
 
   return (
     <div className={`elevation-profile${onSelectDistance ? ' selectable' : ''}`}>
@@ -55,30 +46,47 @@ export function ElevationProfile({
             ? (e) => {
                 const rect = e.currentTarget.getBoundingClientRect()
                 const ratio = (e.clientX - rect.left) / rect.width
-                onSelectDistance(Math.min(1, Math.max(0, ratio)) * totalM)
+                onSelectDistance(Math.min(1, Math.max(0, ratio)) * g.totalM)
               }
             : undefined
         }
       >
-        {colorRuns(columns).map((run, i) => (
-          <polygon
-            key={i}
-            points={[
-              `${x(run[0]!.x0)},${baseY}`,
-              `${x(run[0]!.x0)},${y(run[0]!.e0)}`,
-              ...run.map((c) => `${x(c.x1)},${y(c.e1)}`),
-              `${x(run[run.length - 1]!.x1)},${baseY}`,
-            ].join(' ')}
-            fill={gradeColor(run[0]!.grade)}
-          />
-        ))}
+        <defs>
+          <clipPath id={clipId}>
+            <path d={g.area(x, y)} />
+          </clipPath>
+        </defs>
+        <g clipPath={`url(#${clipId})`}>
+          {g.bands.map((b) => (
+            <rect
+              key={b.fromM}
+              x={0}
+              width={WIDTH}
+              y={y(b.toM)}
+              height={y(b.fromM) - y(b.toM)}
+              fill={b.color}
+            />
+          ))}
+          {g.bands.slice(1).map((b) => (
+            <line
+              key={b.fromM}
+              className="profile-contour"
+              vectorEffect="non-scaling-stroke"
+              x1={0}
+              x2={WIDTH}
+              y1={y(b.fromM)}
+              y2={y(b.fromM)}
+            />
+          ))}
+        </g>
+        <path className="profile-line" vectorEffect="non-scaling-stroke" d={g.line(x, y)} />
         {startDistanceM !== undefined && startDistanceM > 0 && (
           <>
             <rect
               className="profile-before-start"
-              x={x(0)}
+              x={0}
               y={0}
-              width={x(startDistanceM) - x(0)}
+              width={x(startDistanceM)}
               height={HEIGHT}
             />
             <line
@@ -87,8 +95,8 @@ export function ElevationProfile({
               vectorEffect="non-scaling-stroke"
               x1={x(startDistanceM)}
               x2={x(startDistanceM)}
-              y1={PAD.top}
-              y2={baseY}
+              y1={PAD_TOP}
+              y2={HEIGHT}
             />
           </>
         )}
@@ -99,8 +107,8 @@ export function ElevationProfile({
             vectorEffect="non-scaling-stroke"
             x1={x(ghostDistanceM)}
             x2={x(ghostDistanceM)}
-            y1={PAD.top}
-            y2={baseY}
+            y1={PAD_TOP}
+            y2={HEIGHT}
           />
         )}
         {markerDistanceM !== undefined && (
@@ -109,62 +117,53 @@ export function ElevationProfile({
             vectorEffect="non-scaling-stroke"
             x1={x(markerDistanceM)}
             x2={x(markerDistanceM)}
-            y1={PAD.top}
-            y2={baseY}
+            y1={PAD_TOP}
+            y2={HEIGHT}
           />
         )}
       </svg>
-      {/* 文字は SVG の伸縮で歪まないよう HTML で重ねる */}
-      <span className="axis-label axis-top">
-        {Math.round(maxE)} {t('unit.m')}
-      </span>
-      <span className="axis-label axis-bottom">
-        {Math.round(minE)} {t('unit.m')}
-      </span>
-      <span className="axis-label axis-end">
-        {formatKm(totalM)} {t('unit.km')}
-      </span>
+      <div className="profile-axis">
+        <span>
+          {formatMeters(g.minM)} {t('unit.m')} → {formatMeters(g.maxM)} {t('unit.m')}
+        </span>
+        <span>{t('profile.contours', { interval: g.intervalM })}</span>
+        <span>
+          {formatKm(g.totalM)} {t('unit.km')}
+        </span>
+      </div>
     </div>
   )
 }
 
-function buildColumns(profile: readonly ProfilePoint[]) {
+function geometry(profile: readonly ProfilePoint[]) {
   const totalM = profile[profile.length - 1]?.distanceM || 1
-  let minE = Infinity
-  let maxE = -Infinity
+  let minM = Infinity
+  let maxM = -Infinity
   for (const p of profile) {
-    minE = Math.min(minE, p.elevationM)
-    maxE = Math.max(maxE, p.elevationM)
+    minM = Math.min(minM, p.elevationM)
+    maxM = Math.max(maxM, p.elevationM)
   }
-  const n = Math.min(MAX_COLUMNS, Math.max(1, profile.length - 1))
-  const columns: Column[] = []
-  let j = 0
-  const elevationAt = (d: number) => {
-    while (j < profile.length - 2 && profile[j + 1]!.distanceM < d) j++
-    const a = profile[j]!
-    const b = profile[j + 1] ?? a
-    const span = b.distanceM - a.distanceM
-    const tt = span > 0 ? Math.min(1, Math.max(0, (d - a.distanceM) / span)) : 0
-    return a.elevationM + (b.elevationM - a.elevationM) * tt
-  }
-  let prevE = elevationAt(0)
-  for (let i = 0; i < n; i++) {
-    const x0 = (i / n) * totalM
-    const x1 = ((i + 1) / n) * totalM
-    const e1 = elevationAt(x1)
-    columns.push({ x0, x1, e0: prevE, e1, grade: (e1 - prevE) / (x1 - x0) })
-    prevE = e1
-  }
-  return { columns, minE, maxE, totalM }
-}
-
-/** 同じ色が続く列を 1 つの多角形にまとめる（継ぎ目の隙間と要素数を減らす） */
-function colorRuns(columns: Column[]): Column[][] {
-  const runs: Column[][] = []
-  for (const c of columns) {
-    const last = runs[runs.length - 1]
-    if (last && gradeColor(last[0]!.grade) === gradeColor(c.grade)) last.push(c)
-    else runs.push([c])
-  }
-  return runs
+  const intervalM = contourIntervalM(minM, maxM)
+  // 帯は等高線の間隔のきりのよい高さで区切る。図の上下も帯の境目に合わせる
+  const bottomM = Math.floor(minM / intervalM) * intervalM
+  const topM = Math.max(bottomM + intervalM, Math.ceil(maxM / intervalM) * intervalM)
+  const count = Math.round((topM - bottomM) / intervalM)
+  const bands = Array.from({ length: count }, (_, i) => ({
+    fromM: bottomM + i * intervalM,
+    toM: bottomM + (i + 1) * intervalM,
+    color: reliefColor(count === 1 ? 0 : i / (count - 1)),
+  }))
+  const step = Math.max(1, Math.ceil(profile.length / MAX_POINTS))
+  const pts = profile.filter((_, i) => i % step === 0 || i === profile.length - 1)
+  type Scale = (v: number) => number
+  const line = (x: Scale, y: Scale) =>
+    pts
+      .map(
+        (p, i) =>
+          `${i === 0 ? 'M' : 'L'}${x(p.distanceM).toFixed(1)} ${y(p.elevationM).toFixed(1)}`,
+      )
+      .join(' ')
+  const area = (x: Scale, y: Scale) =>
+    `${line(x, y)} L${x(totalM).toFixed(1)} ${HEIGHT} L0 ${HEIGHT} Z`
+  return { totalM, minM, maxM, intervalM, bottomM, topM, bands, line, area }
 }

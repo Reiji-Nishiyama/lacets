@@ -62,25 +62,27 @@ export function GhostPicker({
         })
 
   return (
-    <section className="panel ghost-picker">
-      <h3>{t('ghost.heading')}</h3>
-      <p className="hint">{t('ghost.hint')}</p>
-      <div className="actions">
-        <select
-          aria-label={t('ghost.heading')}
-          value={keyOf(value)}
-          onChange={(e) => {
-            const o = options?.find((x) => keyOf(x.ref) === e.target.value)
-            onChange(o?.ref ?? null)
-          }}
-        >
-          <option value="">{t('ghost.none')}</option>
-          {options?.map((o) => (
-            <option key={keyOf(o.ref)} value={keyOf(o.ref)}>
-              {label(o)}
-            </option>
-          ))}
-        </select>
+    <div className="ghost-picker">
+      <div className="option-row">
+        <label className="option-field">
+          <span>{t('ghost.heading')}</span>
+          <select
+            aria-label={t('ghost.heading')}
+            title={t('ghost.hint')}
+            value={keyOf(value)}
+            onChange={(e) => {
+              const o = options?.find((x) => keyOf(x.ref) === e.target.value)
+              onChange(o?.ref ?? null)
+            }}
+          >
+            <option value="">{t('ghost.none')}</option>
+            {options?.map((o) => (
+              <option key={keyOf(o.ref)} value={keyOf(o.ref)}>
+                {label(o)}
+              </option>
+            ))}
+          </select>
+        </label>
         <button type="button" className="button-subtle" onClick={() => inputRef.current?.click()}>
           {t('ghost.add')}
         </button>
@@ -110,6 +112,6 @@ export function GhostPicker({
           {message.text}
         </p>
       )}
-    </section>
+    </div>
   )
 }

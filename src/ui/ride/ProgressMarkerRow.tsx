@@ -5,13 +5,16 @@ import { t } from '../i18n/index.ts'
 export function ProgressMarkerRow({
   markers,
   distanceM,
+  preview = false,
 }: {
   markers: ProgressMarkers
   distanceM: number
+  /** 事前確認画面: 印の数だけを見せる（越えた印・次の印・のこりは出さない） */
+  preview?: boolean
 }) {
   const total = markers.positionsM.length
   if (total === 0) return null
-  const passed = passedMarkers(markers, distanceM)
+  const passed = preview ? -1 : passedMarkers(markers, distanceM)
   const label =
     markers.kind === 'hairpin'
       ? t('ride.marker.hairpin')
@@ -20,7 +23,10 @@ export function ProgressMarkerRow({
         : t('ride.marker.distance', { step: markers.stepM / 1000 })
   return (
     <div className="marker-row">
-      <span className="marker-label">{label}</span>
+      <span className="marker-label">
+        {label}
+        {preview && ` ${total}`}
+      </span>
       <div
         className="marker-dots"
         role="img"
@@ -39,7 +45,11 @@ export function ProgressMarkerRow({
           />
         ))}
       </div>
-      <span className="marker-label">{t('ride.marker.remaining', { count: total - passed })}</span>
+      {!preview && (
+        <span className="marker-label">
+          {t('ride.marker.remaining', { count: total - passed })}
+        </span>
+      )}
     </div>
   )
 }

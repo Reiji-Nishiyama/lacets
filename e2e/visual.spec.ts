@@ -48,11 +48,11 @@ test('路上画像のカバー率を表示し、走行中は画像と 3D 地形�
   await page.getByRole('button', { name: /Synthetic Lacets/ }).click()
 
   // 1 km / 13.8 km ≈ 7%
-  await expect(page.getByTestId('street-coverage')).toContainText(/ルートの [5-9]% で路上画像/)
+  await expect(page.getByTestId('street-coverage')).toContainText(/ルートの [5-9]%/)
   await expect(page.getByTestId('street-coverage')).toContainText('Panoramax 51 枚')
 
   await page.getByRole('button', { name: 'トレーナーに接続' }).click()
-  await page.getByRole('button', { name: '走行を開始' }).click()
+  await page.getByRole('button', { name: '走りはじめる' }).click()
   await expect(page.getByTestId('street-image')).toBeVisible()
   await expect(page.getByTestId('street-image-credit')).toHaveText(
     '© Test Rider / Panoramax（CC-BY-SA-4.0）',

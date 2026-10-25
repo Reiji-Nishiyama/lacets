@@ -494,39 +494,35 @@ button:disabled {
 
 .elevation-profile {
   position: relative;
-  background: var(--paper);
-  border-radius: var(--radius-panel);
-  margin: var(--space-2) 0;
-  padding: var(--space-1) var(--space-1) 28px;
 }
 
 .elevation-profile svg {
   display: block;
   width: 100%;
-  height: 160px;
+  height: 150px;
 }
 
-.axis-label {
-  position: absolute;
-  color: var(--ink-muted);
+.profile-line {
+  fill: none;
+  stroke: var(--pine);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+.profile-contour {
+  stroke: var(--paper);
+  stroke-width: 1.5;
+}
+
+.profile-axis {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-1);
+  margin-top: 6px;
   font-size: 13px;
   font-weight: 700;
+  color: var(--ink-muted);
   font-variant-numeric: tabular-nums;
-}
-
-.axis-top {
-  top: 10px;
-  left: 16px;
-}
-
-.axis-bottom {
-  bottom: 6px;
-  left: 16px;
-}
-
-.axis-end {
-  bottom: 6px;
-  right: 16px;
 }
 
 .profile-marker {
@@ -601,7 +597,6 @@ button:disabled {
   color: var(--error);
 }
 
-.ghost-picker h3,
 .report h3 {
   margin: 0 0 var(--space-1);
 }
@@ -740,15 +735,6 @@ button:disabled {
   white-space: nowrap;
 }
 
-.street-coverage h3 {
-  margin: 0 0 var(--space-1);
-}
-
-.street-coverage,
-.ghost-picker {
-  margin-top: var(--space-2);
-}
-
 /* 見出し → 入力欄＋ボタン → 説明文 の順に並べる */
 .settings .field.field-stacked {
   align-items: flex-end;
@@ -812,21 +798,6 @@ button:disabled {
 .profile-start-marker {
   stroke: var(--pine);
   stroke-width: 3;
-}
-
-.start-point {
-  margin-top: var(--space-2);
-}
-
-.start-point h3 {
-  margin: 0;
-}
-
-.direction-toggle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  margin: 0 0 var(--space-2);
 }
 
 .calibration-result {
@@ -1112,5 +1083,236 @@ button:disabled {
 
   .stage-top-right {
     top: 76px;
+  }
+}
+
+/* 地図上の現在地・ゴースト */
+.map-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 4px solid var(--pine);
+  box-sizing: border-box;
+}
+
+.map-dot-here {
+  background: var(--sun);
+}
+
+.map-dot-ghost {
+  width: 18px;
+  height: 18px;
+  background: var(--paper);
+  border-color: #6b8790;
+}
+
+/* ルートの事前確認（docs/07-design.md の統合案） */
+.preview-hero {
+  margin: var(--space-1) 0 var(--space-3);
+}
+
+.back-pill {
+  background: rgb(255 255 255 / 80%);
+  border-radius: var(--radius-pill);
+  min-height: 40px;
+  padding: 6px 16px;
+  font-size: 15px;
+}
+
+.preview-title {
+  margin: var(--space-2) 0 0;
+  font-size: 52px;
+  line-height: 1.2;
+}
+
+.preview-subtitle {
+  margin: 4px 0 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.preview-sheet {
+  background: var(--paper);
+  border-radius: var(--radius-sheet);
+  padding: 36px 36px 36px 44px;
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 44px;
+}
+
+.preview-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.preview-info > p {
+  margin: 0;
+}
+
+.chips {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  background: var(--leaf);
+  border-radius: var(--radius-pill);
+  padding: 9px 18px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-muted);
+}
+
+.chip strong {
+  font-size: 19px;
+  font-weight: 900;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.profile-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.start-point input[type='range'] {
+  margin: 0;
+}
+
+.start-point-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 44px;
+}
+
+.start-point-row p {
+  margin: 0;
+  flex-grow: 1;
+  font-weight: 700;
+}
+
+.preview-options {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.option-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--mist);
+  border-radius: var(--radius-control);
+  padding: 12px 16px;
+  font-weight: 700;
+}
+
+.ghost-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.option-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+}
+
+.option-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--mist);
+  border-radius: var(--radius-control);
+  padding: 8px 12px 8px 16px;
+  font-weight: 700;
+  max-width: 100%;
+}
+
+.option-field select {
+  max-width: 22rem;
+}
+
+.preview-go {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+.preview-map {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 360px;
+  border-radius: var(--radius-panel);
+  overflow: hidden;
+  background: var(--relief-0);
+}
+
+/* MapLibre の CSS（.maplibregl-map { position: relative }）が後から読み込まれるので詳細度を上げる */
+.preview-map > .map-fill {
+  position: absolute;
+  inset: 0;
+  height: auto;
+  margin: 0;
+  border-radius: 0;
+}
+
+.map-pill {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  z-index: 2;
+  max-width: calc(100% - 28px);
+  background: var(--paper);
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.map-errors {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: 56px;
+  z-index: 2;
+}
+
+.button-go {
+  width: 100%;
+  min-height: 72px;
+  font-size: 22px;
+  border-radius: var(--radius-panel);
+}
+
+.go-connect {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  align-items: stretch;
+}
+
+.go-connect .hint {
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .preview-sheet {
+    grid-template-columns: minmax(0, 1fr);
+    padding: var(--space-3);
+  }
+
+  .preview-title {
+    font-size: 40px;
   }
 }

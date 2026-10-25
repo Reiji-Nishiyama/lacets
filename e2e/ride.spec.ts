@@ -26,7 +26,7 @@ test('ルートを取り込んで走り、一時停止・再開・終了して F
 
   // トレーナーを接続して開始
   await page.getByRole('button', { name: 'トレーナーに接続' }).click()
-  await page.getByRole('button', { name: '走行を開始' }).click()
+  await page.getByRole('button', { name: '走りはじめる' }).click()
   await expect(page.getByTestId('ride-status')).toHaveText('走行中')
   await expect
     .poll(async () => Number(await page.getByTestId('ride-distance').textContent()), {
