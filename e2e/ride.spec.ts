@@ -34,6 +34,9 @@ test('ルートを取り込んで走り、一時停止・再開・終了して F
     })
     .toBeGreaterThan(0)
   await expect(page.getByTestId('ride-power')).not.toHaveText('—')
+  // 合成ルートは 21 のつづら折り → 印の列はヘアピン
+  await expect(page.getByTestId('marker-row')).toHaveAttribute('data-total', '21')
+  await expect(page.getByText('ヘアピン', { exact: true })).toBeVisible()
 
   // 一時停止・再開
   await page.getByRole('button', { name: '一時停止' }).click()

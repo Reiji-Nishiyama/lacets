@@ -232,6 +232,18 @@ export const ja = {
   'settings.roadSurface.rough': '荒れた舗装（Crr 0.006）',
   'settings.roadSurface.custom': 'その他（Crr {crr}）',
 
+  'ride.minimap': 'ルートの形と現在地',
+  'ride.marker.hairpin': 'ヘアピン',
+  'ride.marker.elevation': '標高 {step} m ごと',
+  'ride.marker.distance': '{step} km ごと',
+  'ride.marker.remaining': 'のこり {count}',
+  'ride.marker.aria': '{label}の印 {total} のうち {passed} を越えた',
+  'ride.view': '表示',
+  'ride.travelled': '走行',
+  'ride.paused.title': '一時停止中',
+  'ride.autoPaused.title': 'トレーナーに再接続しています',
+  'ride.autoPaused.hint': 'つながると自動で再開します',
+
   'error.connectFailed': '接続できませんでした: {detail}',
   'error.commandFailed': 'トレーナーへの送信に失敗しました: {detail}',
 } as const
