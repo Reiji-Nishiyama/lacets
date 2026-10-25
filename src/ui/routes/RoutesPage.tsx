@@ -1,12 +1,15 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
 import { RouteParseError } from '../../domain/course/parsers/RouteParseError.ts'
+import { averageGrade } from '../../domain/course/profile.ts'
+import { progressMarkers } from '../../domain/course/progressMarkers.ts'
 import type { StoredRoute } from '../../store/db.ts'
 import { addRouteFromFile, deleteRoute, listRoutes } from '../../store/routeRepository.ts'
 import { formatGradePct, formatKm, formatMeters } from '../format.ts'
 import { t } from '../i18n/index.ts'
 import { useNavigation } from '../navigation.ts'
 import { RouteDropZone } from './RouteDropZone.tsx'
+import { RouteThumbnail } from './RouteThumbnail.tsx'
 
 interface ImportMessage {
   kind: 'ok' | 'error'
@@ -21,6 +24,10 @@ function importErrorMessage(fileName: string, e: unknown): string {
   })
 }
 
+/**
+ * ルート一覧（docs/07-design.md）。取り込んだルートを、形の絵と数字のチップのカードで並べる。
+ * 先頭のタイルが新しいルートの取り込み口
+ */
 export function RoutesPage() {
   const routes = useLiveQuery(() => listRoutes(), [])
   const navigate = useNavigation((s) => s.navigate)
@@ -50,8 +57,10 @@ export function RoutesPage() {
 
   return (
     <section>
-      <h2 className="page-title">{t('routes.title')}</h2>
-      <RouteDropZone onFiles={(files) => void importFiles(files)} busy={importing} />
+      <div className="page-hero">
+        <h2 className="page-hero-title">{t('routes.title')}</h2>
+        <p className="page-hero-subtitle">{t('routes.subtitle')}</p>
+      </div>
       {messages.map((m, i) => (
         <p
           key={i}
@@ -61,29 +70,68 @@ export function RoutesPage() {
           {m.text}
         </p>
       ))}
-      {routes && routes.length === 0 && <p className="hint">{t('routes.empty')}</p>}
-      <ul className="route-list">
+      <ul className="route-grid">
+        <li className="route-add">
+          <h3>{t('routes.addHeading')}</h3>
+          <RouteDropZone onFiles={(files) => void importFiles(files)} busy={importing} />
+        </li>
         {routes?.map((r) => (
-          <li key={r.id} className="route-item">
-            <button
-              type="button"
-              className="route-open"
-              onClick={() => navigate({ name: 'preview', routeId: r.id })}
-            >
-              <span className="route-name">{r.name}</span>
-              <span className="route-stats">
-                {formatKm(r.stats.distanceM)} {t('unit.km')} ・ {t('stats.ascent')}{' '}
-                {formatMeters(r.stats.ascentM)} {t('unit.m')} ・ {t('stats.maxGrade')}{' '}
-                {formatGradePct(r.stats.maxGrade)}
-                {t('unit.percent')}
-              </span>
-            </button>
-            <button type="button" className="button-subtle" onClick={() => void remove(r)}>
-              {t('routes.delete')}
-            </button>
-          </li>
+          <RouteCard
+            key={r.id}
+            route={r}
+            onOpen={() => navigate({ name: 'preview', routeId: r.id })}
+            onDelete={() => void remove(r)}
+          />
         ))}
       </ul>
+      {routes && routes.length === 0 && <p className="hint">{t('routes.empty')}</p>}
     </section>
+  )
+}
+
+function RouteCard({
+  route,
+  onOpen,
+  onDelete,
+}: {
+  route: StoredRoute
+  onOpen: () => void
+  onDelete: () => void
+}) {
+  const { stats, profile } = route
+  const markers = progressMarkers(profile)
+  return (
+    <li className="route-card">
+      <button type="button" className="route-card-open" onClick={onOpen}>
+        <span className="route-card-picture">
+          <RouteThumbnail profile={profile} />
+          {markers.kind === 'hairpin' && (
+            <span className="route-card-badge">
+              {t('routes.hairpins', { count: markers.positionsM.length })}
+            </span>
+          )}
+        </span>
+        <span className="route-card-name">{route.name}</span>
+        <span className="chips">
+          <span className="chip chip-small">
+            <strong>{formatKm(stats.distanceM)}</strong> {t('unit.km')}
+          </span>
+          <span className="chip chip-small">
+            {t('chip.ascent')} <strong>{formatMeters(stats.ascentM)}</strong> {t('unit.m')}
+          </span>
+          <span className="chip chip-small">
+            {t('chip.averageGrade')} <strong>{formatGradePct(averageGrade(profile))}</strong>
+            {t('unit.percent')}
+          </span>
+          <span className="chip chip-small">
+            {t('chip.maxGrade')} <strong>{formatGradePct(stats.maxGrade)}</strong>
+            {t('unit.percent')}
+          </span>
+        </span>
+      </button>
+      <button type="button" className="button-subtle route-card-delete" onClick={onDelete}>
+        {t('routes.delete')}
+      </button>
+    </li>
   )
 }

@@ -37,6 +37,7 @@ export function RouteMap({
   styleUrl = MAP_STYLE_URL,
   className = 'map',
   relief = false,
+  track,
   onMaptilerError,
 }: {
   profile: readonly ProfilePoint[]
@@ -51,6 +52,11 @@ export function RouteMap({
   className?: string
   /** 標高の帯で塗り分ける（docs/07-design.md。勾配図と同じ色の段） */
   relief?: boolean
+  /**
+   * 実際に走った軌跡（走行の詳細）。あればルートは淡い線にし、軌跡を濃い緑で重ねる。
+   * スタート・ゴールの丸は軌跡の始まりと終わりに付ける
+   */
+  track?: readonly { lat: number; lon: number }[]
   /** MapTiler がキーの誤り・利用上限で拒否したとき（呼び出し側で通常の地図に戻す） */
   onMaptilerError?: (status: number) => void
 }) {
@@ -104,7 +110,7 @@ export function RouteMap({
             ?.classList.remove('maplibregl-compact-show')
           if (terrain) addTerrain(m)
           if (relief) addRelief(m, profile)
-          addRoute(m, coords, terrain)
+          addRoute(m, coords, terrain, track && lineCoordinates(track))
         })
         m.on('error', (e) => {
           console.warn('地図のエラー', e.error)
@@ -131,7 +137,7 @@ export function RouteMap({
       mapRef.current = null
       followStartedRef.current = false
     }
-  }, [profile, terrain, styleUrl, relief])
+  }, [profile, terrain, styleUrl, relief, track])
 
   useEffect(() => {
     const map = mapRef.current
@@ -200,15 +206,25 @@ function dot(className: string): HTMLElement {
 
 const PINE = '#2c5f4f'
 const SUN = '#f4b63c'
+/** 走らなかった部分のルート（小さな地図の .minimap-route と同じ） */
+const PINE_PALE = '#9cc3b4'
 
-/** ルート: 白い縁取りの太い緑の線、スタートは白、ゴールは太陽の黄色の丸（docs/07-design.md） */
-function addRoute(m: MapLibreMap, coords: [number, number][], terrain: boolean) {
+/**
+ * ルート: 白い縁取りの太い緑の線、スタートは白、ゴールは太陽の黄色の丸（docs/07-design.md）。
+ * 軌跡があれば、ルートは淡い緑にして軌跡を濃い緑で重ね、丸は軌跡の両端に付ける
+ */
+function addRoute(
+  m: MapLibreMap,
+  routeCoords: [number, number][],
+  terrain: boolean,
+  trackCoords?: [number, number][],
+) {
   m.addSource('route', {
     type: 'geojson',
     data: {
       type: 'Feature',
       properties: {},
-      geometry: { type: 'LineString', coordinates: coords },
+      geometry: { type: 'LineString', coordinates: routeCoords },
     },
   })
   m.addLayer({
@@ -223,8 +239,26 @@ function addRoute(m: MapLibreMap, coords: [number, number][], terrain: boolean) 
     type: 'line',
     source: 'route',
     layout: { 'line-join': 'round', 'line-cap': 'round' },
-    paint: { 'line-color': PINE, 'line-width': terrain ? 6 : 5 },
+    paint: { 'line-color': trackCoords ? PINE_PALE : PINE, 'line-width': terrain ? 6 : 5 },
   })
+  if (trackCoords && trackCoords.length >= 2) {
+    m.addSource('track', {
+      type: 'geojson',
+      data: {
+        type: 'Feature',
+        properties: {},
+        geometry: { type: 'LineString', coordinates: trackCoords },
+      },
+    })
+    m.addLayer({
+      id: 'track-line',
+      type: 'line',
+      source: 'track',
+      layout: { 'line-join': 'round', 'line-cap': 'round' },
+      paint: { 'line-color': PINE, 'line-width': terrain ? 6 : 5 },
+    })
+  }
+  const coords = trackCoords && trackCoords.length >= 2 ? trackCoords : routeCoords
   const first = coords[0]
   const last = coords[coords.length - 1]
   if (!first || !last) return
@@ -339,7 +373,7 @@ function addTerrain(m: MapLibreMap) {
   m.setTerrain({ source: 'terrain-dem', exaggeration: TERRAIN_EXAGGERATION })
 }
 
-function lineCoordinates(profile: readonly ProfilePoint[]): [number, number][] {
+function lineCoordinates(profile: readonly { lat: number; lon: number }[]): [number, number][] {
   const step = Math.max(1, Math.ceil(profile.length / MAX_LINE_POINTS))
   const coords: [number, number][] = []
   for (let i = 0; i < profile.length; i += step) coords.push([profile[i]!.lon, profile[i]!.lat])

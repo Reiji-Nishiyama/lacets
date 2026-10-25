@@ -41,6 +41,18 @@ export function formatDateTime(ms: number): string {
   })
 }
 
+/** 履歴の日付の札: 「10/25」 */
+export function formatMonthDay(ms: number): string {
+  const d = new Date(ms)
+  return `${d.getMonth() + 1}/${d.getDate()}`
+}
+
+/** 履歴の日付の札: 「2026 年 7:05」 */
+export function formatYearTime(ms: number): string {
+  const d = new Date(ms)
+  return `${d.getFullYear()} 年 ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
 export function formatPercent(ratio: number): string {
   return String(Math.round(ratio * 100))
 }

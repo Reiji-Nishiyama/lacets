@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { northboundRoute } from '../../../test/helpers/syntheticRoute.ts'
-import { buildProfile, centralDifference } from './profile.ts'
+import { averageGrade, buildProfile, centralDifference } from './profile.ts'
 
 const mid = <T>(xs: T[], margin: number) => xs.slice(margin, xs.length - margin)
 
@@ -86,5 +86,19 @@ describe('buildProfile', () => {
 describe('centralDifference', () => {
   it('端では片側に縮める', () => {
     expect(centralDifference([0, 10, 20], [0, 1, 4], 1)).toEqual([0.1, 0.2, 0.3])
+  })
+})
+
+describe('averageGrade', () => {
+  it('始点と終点の標高差を距離で割る', () => {
+    const { profile } = buildProfile(
+      northboundRoute(2000, 20, (d) => 700 + 0.08 * d),
+      'dem',
+    )
+    expect(averageGrade(profile)).toBeCloseTo(0.08, 4)
+  })
+
+  it('点が 1 つ以下なら 0', () => {
+    expect(averageGrade([])).toBe(0)
   })
 })
