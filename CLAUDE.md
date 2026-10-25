@@ -91,3 +91,4 @@ docs/
 - `docs/04-external-services.md` 外部サービスの仕様・規約メモ
 - `docs/05-ble-ftms.md` Bluetooth FTMS プロトコルメモ
 - `docs/06-calibration.md` 負荷のキャリブレーション（#7）の手順とデータの扱い
+- `docs/07-design.md` デザインの世界観・色・文字・部品・画面構成（UI を作るときは必ず従う）

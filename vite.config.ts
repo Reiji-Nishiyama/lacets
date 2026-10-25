@@ -10,13 +10,26 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
+      workbox: {
+        // 書体（unicode-range ごとに分割された woff2）は使った分だけ端末に残し、オフラインでも表示できるようにする
+        runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.destination === 'font',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'fonts',
+              expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
+        ],
+      },
       manifest: {
         name: 'Lacets',
         short_name: 'Lacets',
         description: '実在のルートをスマートトレーナーで再現するインドアサイクリングアプリ',
         lang: 'ja',
-        theme_color: '#1f2933',
-        background_color: '#1f2933',
+        theme_color: '#e3f1f8',
+        background_color: '#e3f1f8',
         display: 'standalone',
         orientation: 'any',
         start_url: '/',
