@@ -8,7 +8,11 @@ export const ja = {
   'nav.settings': '設定',
   'app.simulatorNotice': 'シミュレータモードで動作しています（実機のトレーナーには接続しません）',
 
-  'devices.title': 'デバイス接続',
+  'devices.title': 'デバイス',
+  'devices.subtitle': '走る前に、トレーナーと心拍計をつなぎます',
+  'devices.testHeading': '負荷のテスト',
+  'devices.testHint':
+    'トレーナーにつないだら、勾配を手で送って負荷の変わり方を確かめられます。体感が合わないときは、記録から負荷を補正できます（設定の「トレーナーの負荷補正」）。',
   'devices.unsupportedBrowser':
     'このブラウザは Web Bluetooth に対応していません。Windows / macOS は Chrome か Edge、iPad は Bluefy を使ってください。',
   'devices.trySimulator': 'シミュレータで試す',
@@ -125,7 +129,10 @@ export const ja = {
   'summary.exported': 'FIT ファイルを書き出しました',
   'summary.exportFailed': 'FIT ファイルを書き出せませんでした: {detail}',
 
-  'settings.title': 'ライダー設定',
+  'settings.title': '設定',
+  'settings.subtitle': 'あなたと自転車のこと、地図と路上画像の使い方',
+  'settings.rider': 'ライダーと自転車',
+  'settings.riderHint': '速度は、ここで決めた重さと空気抵抗・路面からアプリが計算します。',
   'settings.riderMass': '体重',
   'settings.bikeMass': 'バイク重量',
   'unit.kg': 'kg',

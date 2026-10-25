@@ -42,31 +42,35 @@ function SecretField({
 export function MediaSettingsPanel() {
   const media = useSettingsStore((s) => s.media)
   return (
-    <div className="panel settings">
-      <h3>{t('settings.media')}</h3>
-      <label className="field">
-        <input
-          type="checkbox"
-          checked={media.panoramaxEnabled}
-          onChange={(e) => updateMediaSettings({ panoramaxEnabled: e.target.checked })}
+    <section className="settings-section">
+      <div className="settings-intro">
+        <h3>{t('settings.media')}</h3>
+        <p className="hint">{t('settings.keysLocal')}</p>
+      </div>
+      <div className="settings-fields">
+        <label className="field field-check">
+          <input
+            type="checkbox"
+            checked={media.panoramaxEnabled}
+            onChange={(e) => updateMediaSettings({ panoramaxEnabled: e.target.checked })}
+          />
+          <span>{t('settings.panoramax')}</span>
+        </label>
+        <SecretField
+          label={t('settings.mapillaryToken')}
+          hint={t('settings.mapillaryHint')}
+          value={media.mapillaryToken}
+          onChange={(mapillaryToken) => updateMediaSettings({ mapillaryToken })}
         />
-        <span>{t('settings.panoramax')}</span>
-      </label>
-      <SecretField
-        label={t('settings.mapillaryToken')}
-        hint={t('settings.mapillaryHint')}
-        value={media.mapillaryToken}
-        onChange={(mapillaryToken) => updateMediaSettings({ mapillaryToken })}
-      />
-      <SecretField
-        label={t('settings.maptilerKey')}
-        hint={t('settings.maptilerHint')}
-        value={media.maptilerKey}
-        onChange={(maptilerKey) => updateMediaSettings({ maptilerKey })}
-      />
-      <MaptilerUsage />
-      <p className="hint">{t('settings.keysLocal')}</p>
-    </div>
+        <SecretField
+          label={t('settings.maptilerKey')}
+          hint={t('settings.maptilerHint')}
+          value={media.maptilerKey}
+          onChange={(maptilerKey) => updateMediaSettings({ maptilerKey })}
+        />
+        <MaptilerUsage />
+      </div>
+    </section>
   )
 }
 

@@ -7,9 +7,9 @@ export function HeartRatePanel() {
   const name = useDeviceStore((s) => s.heartRateName)
 
   return (
-    <section className="panel">
+    <section className="device-block">
       <div className="panel-header">
-        <h2>{t('heartRate.heading')}</h2>
+        <h3>{t('heartRate.heading')}</h3>
         <ConnectionBadge state={state} testId="heart-rate-state" />
       </div>
       {name && <p className="device-name">{name}</p>}
@@ -21,6 +21,7 @@ export function HeartRatePanel() {
         ) : (
           <button
             type="button"
+            className="button-subtle"
             disabled={state === 'connecting'}
             onClick={() => void deviceActions.disconnectHeartRate()}
           >

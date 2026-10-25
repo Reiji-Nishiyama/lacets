@@ -192,12 +192,6 @@ h3 {
 }
 
 /* 面 */
-.panels {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
-  gap: var(--space-3);
-}
-
 .panel {
   background: var(--paper);
   border-radius: var(--radius-panel);
@@ -211,7 +205,8 @@ h3 {
   gap: var(--space-1);
 }
 
-.panel-header h2 {
+.panel-header h2,
+.panel-header h3 {
   margin: 0;
   font-size: 20px;
 }
@@ -721,23 +716,162 @@ button:disabled {
 }
 
 /* 設定 */
-.settings .field {
+
+.field-unit {
+  color: var(--ink-muted);
+}
+
+/* 設定: 話題ごとの段。左に見出しと説明、右に項目 */
+.settings-section {
+  display: grid;
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+  gap: 44px;
+  padding: 32px 0;
+}
+
+.settings-section:first-child {
+  padding-top: 0;
+}
+
+.settings-section:last-child {
+  padding-bottom: 0;
+}
+
+.settings-section + .settings-section {
+  border-top: 2px solid var(--leaf);
+}
+
+.settings-intro h3 {
+  margin: 0 0 var(--space-1);
+  font-size: 20px;
+}
+
+.settings-intro .hint {
+  margin: 0;
+}
+
+.settings-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.settings-fields .field {
   display: flex;
   align-items: center;
   gap: var(--space-1);
   flex-wrap: wrap;
+  margin: 0;
 }
 
-.settings .field > span:first-child {
-  min-width: 9rem;
+.settings-fields .field > span:first-child {
+  min-width: 10rem;
+  font-weight: 700;
 }
 
-.settings input[type='number'] {
+.settings-fields .field select {
+  margin-left: 0;
+}
+
+.settings-fields input[type='number'] {
   width: 7rem;
 }
 
-.field-unit {
-  color: var(--ink-muted);
+.settings-fields .field.field-stacked {
+  align-items: flex-end;
+}
+
+.settings-fields .field.field-range {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.field-value {
+  font-size: 20px;
+  font-weight: 900;
+  margin-left: var(--space-1);
+  font-variant-numeric: tabular-nums;
+}
+
+.field-check {
+  font-weight: 700;
+}
+
+/* デバイス */
+.devices-sheet {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 44px;
+}
+
+.device-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.device-block .actions {
+  margin-top: auto;
+}
+
+.device-block .device-name {
+  margin: 0;
+}
+
+.sheet .badge {
+  background: var(--mist);
+}
+
+.device-metrics {
+  margin: var(--space-1) 0;
+}
+
+.device-trainer .metric-value {
+  font-size: 44px;
+}
+
+.device-trainer .metric:first-child .metric-value {
+  font-size: 64px;
+  line-height: 1;
+}
+
+.button-connect {
+  min-height: 64px;
+  min-width: min(100%, 320px);
+  font-size: 20px;
+  border-radius: var(--radius-panel);
+}
+
+.sheet-heading {
+  margin: var(--space-4) 0 var(--space-2);
+  font-size: 24px;
+}
+
+.sheet-lead {
+  margin: 0 0 var(--space-3);
+  max-width: 48rem;
+}
+
+.devices-tests {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 44px;
+}
+
+.sheet-quiet {
+  margin-top: var(--space-3);
+  background: rgb(255 255 255 / 55%);
+}
+
+@media (max-width: 900px) {
+  .settings-section,
+  .devices-sheet,
+  .devices-tests {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+  }
 }
 
 /* ゴースト */
@@ -894,9 +1028,6 @@ button:disabled {
 }
 
 /* 見出し → 入力欄＋ボタン → 説明文 の順に並べる */
-.settings .field.field-stacked {
-  align-items: flex-end;
-}
 
 .field-stacked label {
   display: flex;
@@ -915,14 +1046,6 @@ button:disabled {
 
 .field-stacked .hint {
   margin-top: 4px;
-}
-
-.settings h3 {
-  margin: 0 0 var(--space-1);
-}
-
-.settings + .settings {
-  margin-top: var(--space-3);
 }
 
 .ride-visual-notice {
@@ -1672,4 +1795,8 @@ button.calendar-day.selected:hover:not(:disabled) {
   .page-hero-title {
     font-size: 34px;
   }
+}
+
+.sheet-quiet .device-block {
+  max-width: 560px;
 }

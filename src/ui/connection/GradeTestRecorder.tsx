@@ -21,9 +21,9 @@ export function GradeTestRecorder() {
   const count = samples.length
 
   return (
-    <section className="panel">
+    <section className="device-block">
       <div className="panel-header">
-        <h2>{t('diagnostics.heading')}</h2>
+        <h3>{t('diagnostics.heading')}</h3>
       </div>
       <p className="hint">{t('diagnostics.hint')}</p>
       <div className="actions">
