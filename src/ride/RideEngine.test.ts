@@ -187,4 +187,21 @@ describe('RideEngine', () => {
     })
     expect(engine.snapshot.distanceM).toBe(999)
   })
+
+  it('トレーナーの想定総重量の補正をかけた勾配と Crr を送る（#7）', () => {
+    engine.dispose()
+    engine = new RideEngine({
+      course,
+      trainer,
+      settings: DEFAULT_RIDER_SETTINGS,
+      startDistanceM: 600,
+      trainerMassRatio: 0.8,
+      now: () => Date.now(),
+    })
+    engine.start()
+    const sent = setSimulation.mock.calls.at(-1)![0]
+    expect(sent.grade).toBeCloseTo(0.08 * 0.8, 3)
+    expect(sent.crr).toBeCloseTo(DEFAULT_RIDER_SETTINGS.crr * 0.8, 6)
+    expect(engine.snapshot.trainerGrade).toBeCloseTo(sent.grade, 6)
+  })
 })

@@ -23,7 +23,10 @@ describe('SimulatedTrainer', () => {
     expect(trainer.state).toBe('connected')
     vi.advanceTimersByTime(1000)
     expect(received).toHaveLength(4)
-    expect(received[0]).toEqual({ powerW: 200, cadenceRpm: 90, timestampMs: 0 })
+    expect(received[0]).toMatchObject({ powerW: 200, cadenceRpm: 90, timestampMs: 0 })
+    // 平坦 200 W・想定総重量 82 kg で釣り合う速度（約 34 km/h）を報告する
+    expect(received[0]!.trainerSpeedMps! * 3.6).toBeGreaterThan(32)
+    expect(received[0]!.trainerSpeedMps! * 3.6).toBeLessThan(36)
   })
 
   it('grade モードでは勾配に応じてパワーが変わる', async () => {
@@ -73,5 +76,20 @@ describe('SimulatedTrainer', () => {
     vi.advanceTimersByTime(1000)
     expect(received).toHaveLength(0)
     expect(trainer.capabilities).toBeNull()
+  })
+
+  it('勾配テストから想定総重量（既定 82 kg）を逆算できる速度を報告する（#7）', async () => {
+    const { trainer, received } = setup()
+    trainer.setSettings({ mode: 'fixed', basePowerW: 180 })
+    await trainer.connect()
+    await trainer.setSimulation(sim(0.09))
+    vi.advanceTimersByTime(250)
+    const { estimateTrainerMass } = await import('../../domain/calibration/trainerMass.ts')
+    const samples = Array.from({ length: 60 }, () => ({
+      grade: 0.09,
+      powerW: received.at(-1)!.powerW,
+      trainerSpeedMps: received.at(-1)!.trainerSpeedMps!,
+    }))
+    expect(estimateTrainerMass(samples, { crr: 0.004, cwKgPerM: 0.2 })?.massKg).toBeCloseTo(82, 0)
   })
 })

@@ -4,6 +4,15 @@ import { db as defaultDb, type LacetsDb } from './db.ts'
 
 const RIDER_KEY = 'rider'
 const MEDIA_KEY = 'media'
+const TRAINER_KEY = 'trainer'
+
+/** トレーナーの負荷補正（#7） */
+export interface TrainerSettings {
+  /** トレーナーが想定している総重量 [kg]。null なら補正しない */
+  assumedMassKg: number | null
+}
+
+export const DEFAULT_TRAINER_SETTINGS: TrainerSettings = { assumedMassKg: null }
 
 /** 保存済みの設定を既定値に重ねて返す（項目が増えても古い保存データで動くように） */
 async function load<T extends object>(key: string, defaults: T, db: LacetsDb): Promise<T> {
@@ -32,4 +41,15 @@ export async function saveRiderSettings(
   db: LacetsDb = defaultDb,
 ): Promise<void> {
   await db.settings.put({ key: RIDER_KEY, value: settings })
+}
+
+export function loadTrainerSettings(db: LacetsDb = defaultDb): Promise<TrainerSettings> {
+  return load(TRAINER_KEY, DEFAULT_TRAINER_SETTINGS, db)
+}
+
+export async function saveTrainerSettings(
+  settings: TrainerSettings,
+  db: LacetsDb = defaultDb,
+): Promise<void> {
+  await db.settings.put({ key: TRAINER_KEY, value: settings })
 }

@@ -5,7 +5,14 @@ import type { RecordedRide, RideEvent, RideSample } from './types.ts'
 
 export type RideRecorderMeta = Pick<
   RecordedRide,
-  'id' | 'routeId' | 'routeName' | 'settings' | 'ghost' | 'reversed' | 'startDistanceM'
+  | 'id'
+  | 'routeId'
+  | 'routeName'
+  | 'settings'
+  | 'ghost'
+  | 'reversed'
+  | 'startDistanceM'
+  | 'trainerMassRatio'
 >
 
 /**

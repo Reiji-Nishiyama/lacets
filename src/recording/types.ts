@@ -69,4 +69,6 @@ export interface RecordedRide {
   reversed?: boolean
   /** 走り始めたルート上の距離（#5）。なければ 0 */
   startDistanceM?: number
+  /** トレーナーの想定総重量の補正比（#7）。なければ補正なし */
+  trainerMassRatio?: number
 }

@@ -71,6 +71,8 @@ export const rideActions = {
     ghost: LoadedGhost | null = null,
     /** 走り始めるルート上の距離（#5） */
     startDistanceM = 0,
+    /** 実際の総重量 ÷ トレーナーの想定総重量（#7） */
+    trainerMassRatio = 1,
   ) {
     cleanup()
     if (!devices.trainer) throw new Error('トレーナーがありません')
@@ -81,6 +83,7 @@ export const rideActions = {
       heartRate: devices.heartRate,
       settings,
       startDistanceM,
+      trainerMassRatio,
     })
     engine = e
     // レコーダーは先に購読させ、終了の状態変化を記録し終えてから下で締める
@@ -92,6 +95,7 @@ export const rideActions = {
       ...(ghost ? { ghost: { ...ghost.ref, name: ghost.name } } : {}),
       ...(route.reversed ? { reversed: true } : {}),
       ...(e.snapshot.distanceM > 0 ? { startDistanceM: e.snapshot.distanceM } : {}),
+      ...(trainerMassRatio !== 1 ? { trainerMassRatio } : {}),
     })
     const comparator = ghost ? new GhostComparator(ghost.track) : null
     unsubs.push(

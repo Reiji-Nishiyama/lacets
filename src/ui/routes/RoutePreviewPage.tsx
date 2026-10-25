@@ -7,7 +7,7 @@ import { loadGhost } from '../../store/ghosts.ts'
 import { rideActions } from '../../store/rideStore.ts'
 import { getRoute } from '../../store/routeRepository.ts'
 import { routeVariant } from '../../store/routeVariant.ts'
-import { useSettingsStore } from '../../store/settingsStore.ts'
+import { trainerMassRatio, useSettingsStore } from '../../store/settingsStore.ts'
 import { ElevationProfile } from '../common/ElevationProfile.tsx'
 import { RouteMap } from '../common/RouteMap.tsx'
 import { Stat } from '../common/Stat.tsx'
@@ -26,6 +26,7 @@ export function RoutePreviewPage({ routeId }: { routeId: string }) {
   const devices = useDeviceStore((s) => s.devices)
   const trainerState = useDeviceStore((s) => s.trainerState)
   const rider = useSettingsStore((s) => s.rider)
+  const trainerSettings = useSettingsStore((s) => s.trainer)
   const [reversed, setReversed] = useState(false)
   const [startM, setStartM] = useState(0)
   // undefined = 未選択（ルートに紐付いた実走データがあればそれを既定にする）
@@ -56,7 +57,14 @@ export function RoutePreviewPage({ routeId }: { routeId: string }) {
     setStarting(true)
     try {
       const ghost = effectiveGhost ? await loadGhost(effectiveGhost, variant) : null
-      rideActions.start(variant, devices, rider, ghost, startM)
+      rideActions.start(
+        variant,
+        devices,
+        rider,
+        ghost,
+        startM,
+        trainerMassRatio(rider, trainerSettings),
+      )
       navigate({ name: 'ride' })
     } finally {
       setStarting(false)

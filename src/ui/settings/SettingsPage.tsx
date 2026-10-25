@@ -1,9 +1,20 @@
-import { CDA_PRESETS_M2, type PositionPreset } from '../../domain/rider.ts'
+import {
+  CDA_PRESETS_M2,
+  CRR_PRESETS,
+  type PositionPreset,
+  type RoadSurface,
+} from '../../domain/rider.ts'
 import { updateRiderSettings, useSettingsStore } from '../../store/settingsStore.ts'
 import { t } from '../i18n/index.ts'
 import { MediaSettingsPanel } from './MediaSettingsPanel.tsx'
+import { TrainerSettingsPanel } from './TrainerSettingsPanel.tsx'
 
 const POSITIONS = Object.keys(CDA_PRESETS_M2) as PositionPreset[]
+const SURFACES = Object.keys(CRR_PRESETS) as RoadSurface[]
+
+function surfaceOf(crr: number): RoadSurface | 'custom' {
+  return SURFACES.find((s) => Math.abs(CRR_PRESETS[s] - crr) < 1e-9) ?? 'custom'
+}
 
 function NumberField({
   label,
@@ -80,6 +91,25 @@ export function SettingsPage() {
           </select>
         </label>
         <label className="field">
+          <span>{t('settings.roadSurface')}</span>
+          <select
+            value={surfaceOf(rider.crr)}
+            onChange={(e) => {
+              const v = e.target.value as RoadSurface | 'custom'
+              if (v !== 'custom') updateRiderSettings({ crr: CRR_PRESETS[v] })
+            }}
+          >
+            {SURFACES.map((sf) => (
+              <option key={sf} value={sf}>
+                {t(`settings.roadSurface.${sf}`)}
+              </option>
+            ))}
+            {surfaceOf(rider.crr) === 'custom' && (
+              <option value="custom">{t('settings.roadSurface.custom', { crr: rider.crr })}</option>
+            )}
+          </select>
+        </label>
+        <label className="field">
           <span>
             {t('settings.difficulty')}: {Math.round(rider.difficulty * 100)}
             {t('unit.percent')}
@@ -95,6 +125,7 @@ export function SettingsPage() {
         </label>
         <p className="hint">{t('settings.difficultyHint')}</p>
       </div>
+      <TrainerSettingsPanel />
       <MediaSettingsPanel />
     </section>
   )

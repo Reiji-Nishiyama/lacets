@@ -1,4 +1,3 @@
-import { DEFAULT_CRR } from './physics/aero.ts'
 import { DEFAULT_PHYSICS, type PhysicsParams } from './physics/model.ts'
 
 /** 乗車ポジションごとの CdA [m²]（docs/02-architecture.md §5） */
@@ -10,6 +9,18 @@ export const CDA_PRESETS_M2 = {
 } as const
 
 export type PositionPreset = keyof typeof CDA_PRESETS_M2
+
+/**
+ * 路面ごとの転がり抵抗係数。実走の惰性走行（#7、docs/06-calibration.md）では 0.005 前後が合ったので、
+ * 既定は「普通の舗装」にする
+ */
+export const CRR_PRESETS = {
+  smooth: 0.004,
+  normal: 0.005,
+  rough: 0.006,
+} as const
+
+export type RoadSurface = keyof typeof CRR_PRESETS
 
 export interface RiderSettings {
   riderMassKg: number
@@ -24,7 +35,7 @@ export const DEFAULT_RIDER_SETTINGS: RiderSettings = {
   riderMassKg: 65,
   bikeMassKg: 8,
   position: 'hoods',
-  crr: DEFAULT_CRR,
+  crr: CRR_PRESETS.normal,
   difficulty: 1,
 }
 

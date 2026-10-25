@@ -6,6 +6,6 @@ describe('physicsParamsFor', () => {
     const p = physicsParamsFor({ ...DEFAULT_RIDER_SETTINGS, riderMassKg: 70, position: 'drops' })
     expect(p.totalMassKg).toBe(78)
     expect(p.cdaM2).toBe(0.28)
-    expect(p.crr).toBe(0.004)
+    expect(p.crr).toBe(0.005) // 既定は「普通の舗装」
   })
 })
