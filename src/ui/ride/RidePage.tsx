@@ -8,6 +8,7 @@ import { RideVisual, VISUAL_MODES, type VisualMode } from '../media/RideVisual.t
 import { useNavigation } from '../navigation.ts'
 import { ProgressMarkerRow } from './ProgressMarkerRow.tsx'
 import { RideSummaryPanel } from './RideSummaryPanel.tsx'
+import { RideAheadProfile } from './RideAheadProfile.tsx'
 import { RouteMinimap } from './RouteMinimap.tsx'
 
 /**
@@ -64,6 +65,12 @@ export function RidePage() {
             <span data-testid="ride-ghost-delta">{formatDelta(delta)}</span>
           </div>
         )}
+        <RideAheadProfile
+          course={course}
+          distanceM={snapshot.distanceM}
+          ghostDistanceM={ghostState?.ghostDistanceM}
+          markers={markers}
+        />
         <RouteMinimap
           profile={route.profile}
           distanceM={snapshot.distanceM}

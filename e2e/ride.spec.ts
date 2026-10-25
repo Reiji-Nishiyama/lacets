@@ -37,6 +37,11 @@ test('ルートを取り込んで走り、一時停止・再開・終了して F
   // 合成ルートは 21 のつづら折り → 印の列はヘアピン
   await expect(page.getByTestId('marker-row')).toHaveAttribute('data-total', '21')
   await expect(page.getByText('ヘアピン', { exact: true })).toBeVisible()
+  // この先 2 km: 次の 500 m の平均勾配と、次のヘアピン
+  const ahead = page.getByTestId('ahead-profile')
+  await expect(ahead).toContainText('この先 2 km')
+  await expect(page.getByTestId('ahead-next500')).toHaveText(/^\d+\.\d$/)
+  await expect(ahead).toContainText('ヘアピン 1')
 
   // 一時停止・再開
   await page.getByRole('button', { name: '一時停止' }).click()
