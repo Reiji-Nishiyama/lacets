@@ -40,28 +40,30 @@ export function App() {
     screen.name === 'preview' ? 'routes' : screen.name === 'rideDetail' ? 'history' : screen.name
 
   return (
-    <div className="page">
-      <SkyBackdrop />
-      <header className="app-header">
-        <h1>{t('app.name')}</h1>
-        {!riding && (
-          <nav className="tabs">
-            {TABS.map((tab) => (
-              <button
-                key={tab.name}
-                type="button"
-                className={`tab${activeTab === tab.name ? ' tab-active' : ''}`}
-                aria-current={activeTab === tab.name ? 'page' : undefined}
-                onClick={() => navigate({ name: tab.name })}
-              >
-                {t(tab.label)}
-              </button>
-            ))}
-          </nav>
-        )}
-        <ConnectionBadge state={trainerState} testId="header-trainer-state" />
-      </header>
-      {launch.simulator && <p className="notice">{t('app.simulatorNotice')}</p>}
+    <div className={riding ? 'page page-ride' : 'page'}>
+      {!riding && (
+        <>
+          <SkyBackdrop />
+          <header className="app-header">
+            <h1>{t('app.name')}</h1>
+            <nav className="tabs">
+              {TABS.map((tab) => (
+                <button
+                  key={tab.name}
+                  type="button"
+                  className={`tab${activeTab === tab.name ? ' tab-active' : ''}`}
+                  aria-current={activeTab === tab.name ? 'page' : undefined}
+                  onClick={() => navigate({ name: tab.name })}
+                >
+                  {t(tab.label)}
+                </button>
+              ))}
+            </nav>
+            <ConnectionBadge state={trainerState} testId="header-trainer-state" />
+          </header>
+          {launch.simulator && <p className="notice">{t('app.simulatorNotice')}</p>}
+        </>
+      )}
       <DeviceErrorBanner />
       <main>
         <ScreenView screen={screen} />

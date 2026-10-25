@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Course } from '../../domain/course/Course.ts'
 import { imageAt, imagesBetween } from '../../domain/media/streetImages.ts'
 import type { RouteVariant } from '../../store/routeVariant.ts'
@@ -13,8 +13,8 @@ import { MAP_STYLE_URL, satelliteStyleUrl } from '../common/mapConfig.ts'
 import { t } from '../i18n/index.ts'
 import { StreetImageView } from './StreetImageView.tsx'
 
-type VisualMode = 'auto' | 'image' | 'terrain' | 'map'
-const MODES: VisualMode[] = ['auto', 'image', 'terrain', 'map']
+export type VisualMode = 'auto' | 'image' | 'terrain' | 'map'
+export const VISUAL_MODES: VisualMode[] = ['auto', 'image', 'terrain', 'map']
 
 /** 先読みする範囲 [m] */
 const PRELOAD_AHEAD_M = 200
@@ -24,6 +24,7 @@ const HEADING_LOOKAHEAD_M = 50
 /**
  * 走行中のビジュアル（docs/02 §9）。自動では、路上画像がある地点は画像、ない地点は 3D 地形ビュー。
  * 3D 地形ビューは切り替えのたびに作り直さないよう、画像の下に常に置いておく。
+ * children は風景の上に重ねる札や小さな地図。表示の切り替え（mode）は呼び出し側が持つ。
  */
 export function RideVisual({
   route,
@@ -31,14 +32,17 @@ export function RideVisual({
   distanceM,
   position,
   ghostPosition,
+  mode,
+  children,
 }: {
   route: RouteVariant
   course: Course
   distanceM: number
   position: MapPosition
   ghostPosition?: MapPosition
+  mode: VisualMode
+  children?: ReactNode
 }) {
-  const [mode, setMode] = useState<VisualMode>('auto')
   const media = useSettingsStore((s) => s.media)
   const key = streetImageKey(route.variantKey, media)
   const images = useStreetImageStore((s) => s.byKey[key])
@@ -65,57 +69,42 @@ export function RideVisual({
   const showImage = (mode === 'auto' || mode === 'image') && current !== null
 
   return (
-    <div className="ride-visual">
-      <div className="ride-visual-stage">
-        {mode === 'map' ? (
-          <RouteMap
-            profile={route.profile}
-            position={position}
-            ghostPosition={ghostPosition}
-            follow
-            className="map map-fill"
-          />
-        ) : (
-          <RouteMap
-            profile={route.profile}
-            position={position}
-            ghostPosition={ghostPosition}
-            follow
-            terrain
-            bearingDeg={headingDeg}
-            styleUrl={terrainStyle}
-            className="map map-fill"
-            onMaptilerError={() => setMaptilerFailed(true)}
-          />
-        )}
-        {showImage && current && (
-          <div className="ride-visual-overlay">
-            <StreetImageView image={current.image} headingDeg={headingDeg} preload={preload} />
-          </div>
-        )}
-        {maptilerFailed && (
-          <div className="ride-visual-notice" role="status">
-            {t('visual.maptilerFallback')}
-          </div>
-        )}
-        {mode === 'image' && !current && (
-          <div className="ride-visual-message">{t('visual.noImageHere')}</div>
-        )}
-      </div>
-      <div className="tabs visual-tabs" role="tablist">
-        {MODES.map((m) => (
-          <button
-            key={m}
-            type="button"
-            role="tab"
-            aria-selected={mode === m}
-            className={`tab${mode === m ? ' tab-active' : ''}`}
-            onClick={() => setMode(m)}
-          >
-            {t(`visual.mode.${m}`)}
-          </button>
-        ))}
-      </div>
+    <div className="ride-visual-stage">
+      {mode === 'map' ? (
+        <RouteMap
+          profile={route.profile}
+          position={position}
+          ghostPosition={ghostPosition}
+          follow
+          className="map map-fill"
+        />
+      ) : (
+        <RouteMap
+          profile={route.profile}
+          position={position}
+          ghostPosition={ghostPosition}
+          follow
+          terrain
+          bearingDeg={headingDeg}
+          styleUrl={terrainStyle}
+          className="map map-fill"
+          onMaptilerError={() => setMaptilerFailed(true)}
+        />
+      )}
+      {showImage && current && (
+        <div className="ride-visual-overlay">
+          <StreetImageView image={current.image} headingDeg={headingDeg} preload={preload} />
+        </div>
+      )}
+      {maptilerFailed && (
+        <div className="ride-visual-notice" role="status">
+          {t('visual.maptilerFallback')}
+        </div>
+      )}
+      {mode === 'image' && !current && (
+        <div className="ride-visual-message">{t('visual.noImageHere')}</div>
+      )}
+      {children}
     </div>
   )
 }

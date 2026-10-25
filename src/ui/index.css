@@ -292,16 +292,11 @@ h3 {
   font-variant-numeric: tabular-nums;
 }
 
-.stats,
-.ride-metrics {
+.stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: var(--space-2);
   margin-bottom: var(--space-3);
-}
-
-.ride-metrics .stat-value {
-  font-size: 44px;
 }
 
 /* 入力 */
@@ -657,14 +652,10 @@ button:disabled {
 }
 
 /* 走行中のビジュアル（路上画像・3D 地形・地図） */
-.ride-visual {
-  margin-bottom: var(--space-3);
-}
-
 .ride-visual-stage {
   position: relative;
-  aspect-ratio: 16 / 9;
-  max-height: 60vh;
+  flex: 1 1 auto;
+  min-height: 300px;
   width: 100%;
   border-radius: var(--radius-sheet);
   overflow: hidden;
@@ -693,10 +684,6 @@ button:disabled {
   pointer-events: none;
   color: var(--ink);
   font-weight: 700;
-}
-
-.visual-tabs {
-  margin-top: var(--space-1);
 }
 
 .street-image {
@@ -846,4 +833,284 @@ button:disabled {
   margin-top: var(--space-2);
   padding-top: var(--space-2);
   border-top: 1px solid var(--line);
+}
+
+/* 走行画面（docs/07-design.md の統合案） */
+.page-ride {
+  max-width: none;
+  padding: var(--space-3) 28px;
+}
+
+.ride-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-height: calc(100dvh - 2 * var(--space-3));
+}
+
+.stage-pills {
+  display: flex;
+  gap: var(--space-1);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.stage-top-left {
+  position: absolute;
+  left: 24px;
+  top: 20px;
+  right: 280px;
+  z-index: 2;
+}
+
+.stage-top-right {
+  position: absolute;
+  right: 24px;
+  top: 20px;
+  z-index: 2;
+}
+
+.stage-pill {
+  margin: 0;
+  background: var(--paper);
+  border-radius: var(--radius-pill);
+  padding: 10px 20px;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.3;
+}
+
+.stage-pill.ride-status {
+  font-size: 15px;
+  font-weight: 700;
+  padding: 8px 16px;
+}
+
+.ghost-pill {
+  font-variant-numeric: tabular-nums;
+}
+
+.ghost-pill.ahead {
+  background: var(--sun);
+}
+
+.route-minimap {
+  position: absolute;
+  right: 20px;
+  /* 地図の出典表示（右下の i ボタン）を隠さない */
+  bottom: 48px;
+  width: 220px;
+  height: 170px;
+  z-index: 2;
+  border-radius: 22px;
+  background: var(--relief-0);
+  border: 4px solid var(--paper);
+  overflow: hidden;
+}
+
+.route-minimap svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.minimap-casing {
+  fill: none;
+  stroke: var(--paper);
+  stroke-width: 10;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.minimap-route {
+  fill: none;
+  stroke: #9cc3b4;
+  stroke-width: 5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.minimap-done {
+  fill: none;
+  stroke: var(--pine);
+  stroke-width: 5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.minimap-goal {
+  fill: var(--paper);
+  stroke: var(--pine);
+  stroke-width: 3;
+}
+
+.minimap-ghost {
+  fill: var(--paper);
+  stroke: #6b8790;
+  stroke-width: 3;
+}
+
+.minimap-here {
+  fill: var(--sun);
+  stroke: var(--pine);
+  stroke-width: 3;
+}
+
+.stage-pause {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  background: rgb(227 241 248 / 72%);
+}
+
+.stage-pause-title {
+  margin: 0;
+  font-size: 36px;
+  font-weight: 900;
+}
+
+.ride-panel {
+  background: var(--paper);
+  border-radius: 28px;
+  padding: 18px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.marker-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.marker-label {
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.marker-dots {
+  flex-grow: 1;
+  display: grid;
+  gap: 6px;
+}
+
+.marker-dot {
+  height: 16px;
+  border-radius: var(--radius-pill);
+  background: #dcebe4;
+}
+
+.marker-dot.passed {
+  background: var(--pine);
+}
+
+.marker-dot.next {
+  background: var(--sun);
+}
+
+.ride-numbers {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1.6fr repeat(4, minmax(0, 1fr));
+  gap: 20px;
+  align-items: end;
+}
+
+.ride-number dt {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-muted);
+}
+
+.ride-number dd {
+  margin: 0;
+  font-size: 44px;
+  font-weight: 900;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ride-number-main dd {
+  font-size: 84px;
+  line-height: 1;
+}
+
+.ride-number .unit {
+  font-size: 16px;
+  font-weight: 700;
+  margin-left: 4px;
+  color: var(--ink-muted);
+}
+
+.ride-number-main .unit {
+  font-size: 24px;
+}
+
+.ride-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.ride-progress {
+  margin: 0;
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-muted);
+  flex-grow: 1;
+}
+
+.ride-progress strong {
+  color: var(--ink);
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.view-tabs {
+  flex: 0 1 auto;
+}
+
+.view-tabs .tab-active {
+  background: var(--leaf);
+}
+
+.ride-controls {
+  display: flex;
+  gap: var(--space-1);
+}
+
+/* iPad の縦向き・狭い画面 */
+@media (max-width: 900px) {
+  .ride-numbers {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ride-number-main {
+    grid-column: 1 / -1;
+  }
+
+  .route-minimap {
+    width: 160px;
+    height: 124px;
+  }
+
+  .stage-top-left {
+    right: 24px;
+  }
+
+  .stage-top-right {
+    top: 76px;
+  }
 }

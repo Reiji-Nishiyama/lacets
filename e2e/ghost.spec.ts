@@ -41,7 +41,7 @@ test('前年の実走データをゴーストにして走り、区間比較を�
   await page.getByRole('button', { name: '走行を開始' }).click()
   // ゴーストの開始地点を過ぎると差が出る
   await expect(page.getByTestId('ride-ghost-delta')).not.toHaveText('—', { timeout: 15_000 })
-  await expect(page.getByTestId('profile-ghost-marker')).toBeAttached()
+  await expect(page.getByTestId('minimap-ghost')).toBeAttached()
   await page.getByRole('button', { name: '終了' }).click()
 
   const report = page.getByTestId('ride-report')
