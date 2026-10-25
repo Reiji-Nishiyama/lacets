@@ -1,5 +1,7 @@
 # Lacets
 
+<p><img src="docs/brand/lacets-badge-rider.svg" width="120" alt=""> <img src="docs/brand/lacets-wordmark.svg" width="300" alt="Lacets"></p>
+
 実在のルートを、スマートトレーナー上で「実際に走っているかのように」再現するインドアサイクリング Web アプリ。
 設計・計画は [`CLAUDE.md`](CLAUDE.md) と [`docs/`](docs/) を参照。
 

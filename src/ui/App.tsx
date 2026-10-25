@@ -4,6 +4,7 @@ import { currentLaunchOptions } from '../platform/launchOptions.ts'
 import { bindDevices, useDeviceStore } from '../store/deviceStore.ts'
 import { loadSettings } from '../store/settingsStore.ts'
 import { ConnectionBadge } from './connection/ConnectionBadge.tsx'
+import { LogoBadge, LogoWordmark } from './brand/Logo.tsx'
 import { DevicesPage } from './connection/DevicesPage.tsx'
 import { DeviceErrorBanner } from './DeviceErrorBanner.tsx'
 import { HistoryPage } from './history/HistoryPage.tsx'
@@ -45,7 +46,11 @@ export function App() {
         <>
           <SkyBackdrop />
           <header className="app-header">
-            <h1>{t('app.name')}</h1>
+            <h1 className="app-logo">
+              <LogoBadge />
+              <LogoWordmark />
+              <span className="visually-hidden">{t('app.name')}</span>
+            </h1>
             <nav className="tabs">
               {TABS.map((tab) => (
                 <button

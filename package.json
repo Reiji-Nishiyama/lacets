@@ -15,7 +15,8 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "brand": "node scripts/generate-brand-assets.ts"
   },
   "dependencies": {
     "@fontsource/zen-maru-gothic": "^5.3.1",
