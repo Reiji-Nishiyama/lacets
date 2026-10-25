@@ -84,12 +84,12 @@ export function RoutePreviewPage({ routeId }: { routeId: string }) {
 
   return (
     <section className="preview">
-      <div className="preview-hero">
+      <div className="page-hero">
         <button type="button" className="back-pill" onClick={() => navigate({ name: 'routes' })}>
           ← {t('preview.back')}
         </button>
-        <h2 className="preview-title">{variant.name}</h2>
-        <p className="preview-subtitle">
+        <h2 className="page-hero-title">{variant.name}</h2>
+        <p className="page-hero-subtitle">
           {t('preview.subtitle', { from: formatMeters(fromM), to: formatMeters(toM) })}
         </p>
       </div>

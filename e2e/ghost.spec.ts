@@ -70,7 +70,7 @@ test('同じルートの過去の走行をゴーストにでき、履歴から�
 
   // 履歴
   await page.getByRole('button', { name: '履歴' }).click()
-  const items = page.locator('.route-list li')
+  const items = page.locator('.ride-list li')
   await expect(items).toHaveCount(2)
   await items.first().getByRole('button').click()
   await expect(page.getByTestId('ride-report')).toBeVisible()

@@ -6,7 +6,6 @@ export const ja = {
   'nav.routes': 'ルート',
   'nav.devices': 'デバイス',
   'nav.settings': '設定',
-  'nav.back': '戻る',
   'app.simulatorNotice': 'シミュレータモードで動作しています（実機のトレーナーには接続しません）',
 
   'devices.title': 'デバイス接続',
@@ -49,8 +48,12 @@ export const ja = {
   'simulator.dropout': '一時的な切断を再現',
 
   'routes.title': 'ルート',
-  'routes.empty': 'まだルートがありません。GPX / TCX / FIT ファイルを取り込んでください。',
+  'routes.subtitle': '今日はどの道を走りますか',
+  'routes.empty':
+    'まだルートがありません。走りたい道の GPX / TCX / FIT ファイルを取り込みましょう。',
+  'routes.addHeading': '新しい道を取り込む',
   'routes.drop': 'GPX / TCX / FIT ファイルをここにドロップ',
+  'routes.hairpins': 'ヘアピン {count}',
   'routes.choose': 'ファイルを選択',
   'routes.importing': '取り込み中…',
   'routes.imported': '{name} を取り込みました',
@@ -62,8 +65,6 @@ export const ja = {
   'routes.error.notRecorded': '{file}: 時刻のないファイル（ルート）は実走データとして使えません',
   'routes.error.unknown': '{file}: 取り込みに失敗しました（{detail}）',
 
-  'stats.ascent': '獲得標高',
-  'stats.maxGrade': '最大勾配',
   'unit.km': 'km',
   'unit.m': 'm',
   'unit.kmh': 'km/h',
@@ -166,6 +167,8 @@ export const ja = {
   'report.kmLabel': '{from}–{to} km',
 
   'history.title': '走行履歴',
+  'history.subtitle': 'これまでに走った道と、その日の調子',
+  'history.duration': '時間',
   'history.empty': 'まだ走行記録がありません',
   'history.notFound': '走行記録が見つかりません',
 
