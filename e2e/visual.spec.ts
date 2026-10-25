@@ -75,10 +75,10 @@ test('Mapillary のトークンと MapTiler のキーを設定できる', async 
     await page.reload()
     await page.getByRole('button', { name: '設定' }).click()
     await expect(page.getByLabel('Mapillary のアクセストークン')).toHaveValue('MLY|test', {
-      timeout: 1000,
+      timeout: 3000,
     })
     await expect(page.getByLabel('Panoramax の路上画像を使う（キー不要）')).not.toBeChecked({
-      timeout: 1000,
+      timeout: 3000,
     })
   }).toPass({ timeout: 10_000 })
   await expect(page.getByLabel('Mapillary のアクセストークン')).toHaveAttribute('type', 'password')

@@ -11,6 +11,7 @@ import { RideDetailPage } from './history/RideDetailPage.tsx'
 import { t } from './i18n/index.ts'
 import { useNavigation, type Screen } from './navigation.ts'
 import { RidePage } from './ride/RidePage.tsx'
+import { SkyBackdrop } from './SkyBackdrop.tsx'
 import { RoutePreviewPage } from './routes/RoutePreviewPage.tsx'
 import { RoutesPage } from './routes/RoutesPage.tsx'
 import { SettingsPage } from './settings/SettingsPage.tsx'
@@ -40,6 +41,7 @@ export function App() {
 
   return (
     <div className="page">
+      <SkyBackdrop />
       <header className="app-header">
         <h1>{t('app.name')}</h1>
         {!riding && (

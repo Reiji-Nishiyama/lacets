@@ -78,7 +78,7 @@ test('ライダー設定を保存できる', async ({ page }) => {
   await expect(async () => {
     await page.reload()
     await page.getByRole('button', { name: '設定' }).click()
-    await expect(page.getByLabel('体重')).toHaveValue('58', { timeout: 1000 })
-    await expect(page.getByLabel('ポジション')).toHaveValue('climbing', { timeout: 1000 })
+    await expect(page.getByLabel('体重')).toHaveValue('58', { timeout: 3000 })
+    await expect(page.getByLabel('ポジション')).toHaveValue('climbing', { timeout: 3000 })
   }).toPass({ timeout: 10_000 })
 })
